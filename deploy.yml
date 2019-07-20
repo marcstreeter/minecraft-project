@@ -1,0 +1,132 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spigot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: spigot
+    spec:
+      containers:
+      - name: spigot
+        image: marcstreeter/spigot:v3
+        workingDir: /srv/minecraft
+        volumeMounts:
+          - name: worldfiles
+            mountPath: /srv/minecraft/flabooosh
+          - name: worldfiles
+            mountPath: /srv/minecraft/banned-ips.json
+            subPath: banned-ips.json
+          - name: worldfiles
+            mountPath: /srv/minecraft/banned-players.json
+            subPath: banned-players.json
+          - name: worldfiles
+            mountPath: /srv/minecraft/bukkit.yml
+            subPath: bukkit.yml
+          - name: worldfiles
+            mountPath: /srv/minecraft/commands.yml
+            subPath: commands.yml
+          - name: worldfiles
+            mountPath: /srv/minecraft/help.yml
+            subPath: help.yml
+          - name: worldfiles
+            mountPath: /srv/minecraft/ops.json
+            subPath: ops.json
+          - name: worldfiles
+            mountPath: /srv/minecraft/permissions.yml
+            subPath: permissions.yml
+          - name: worldfiles
+            mountPath: /srv/minecraft/plugins
+            subPath: plugins
+          - name: worldfiles
+            mountPath: /srv/minecraft/server.properties
+            subPath: server.properties
+          - name: worldfiles
+            mountPath: /srv/minecraft/spigot.yml
+            subPath: spigot.yml
+          - name: worldfiles
+            mountPath: /srv/minecraft/usercache.json
+            subPath: usercache.json
+          - name: worldfiles
+            mountPath: /srv/minecraft/whitelist.json
+            subPath: whitelist.json
+          - name: worldfiles
+            mountPath: /srv/minecraft/world
+            subPath: world
+          - name: worldfiles
+            mountPath: /srv/minecraft/world_nether
+            subPath: world_nether
+          - name: worldfiles
+            mountPath: /srv/minecraft/world_the_end
+            subPath: world_the_end
+
+      - name: refresher
+        image: marcstreeter/utils:v3
+        workingDir: /srv/minecraft
+        env:
+        - name: GIT_COMMITTER_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: minecraft
+              key: git-committer-name
+        - name: GIT_COMMITTER_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: minecraft
+              key: git-committer-email
+        - name: MINECRAFT_SERVER_ADDRESS
+          value: "kube.watch:30565"
+        command: ['sh', '-c', 'while true; do sleep 180; commit; done']
+        volumeMounts:
+        - name: worldfiles
+          mountPath: /srv/minecraft
+        - name: ssh
+          mountPath: /root/.ssh
+      initContainers:
+        - name: gitpuller
+          image: marcstreeter/utils:v3
+          workingDir: /srv/minecraft
+          env:
+          - name: GITURL
+            valueFrom:
+              configMapKeyRef:
+                name: minecraft
+                key: git-url
+          command: ['/bin/sh']
+          args: ['-c', "if [ -d .git ]; then echo 'already cloned'; else git clone $(GITURL) .; fi"]
+          volumeMounts:
+          - name: worldfiles
+            mountPath: /srv/minecraft
+          - name: ssh
+            mountPath: /root/.ssh
+      volumes:
+        - name: worldfiles
+          emptyDir: {}
+        - name: ssh
+          configMap:
+            name: minecraft
+            defaultMode: 256
+            items:
+            - key: id_rsa
+              path: id_rsa
+            - key: id_rsa.pub
+              path: id_rsa.pub
+            - key: known_hosts
+              path: known_hosts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spigot-service
+  labels:
+    run: spigot
+spec:
+  selector:
+    app: spigot
+  type: NodePort
+  ports:
+   - protocol: TCP
+     port: 25565
+     nodePort: 30565
