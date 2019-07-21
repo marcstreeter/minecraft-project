@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft
+data:
+  git-committer-name: example
+  git-committer-email: example@mail.com
+  git-url: github.com/example/minecraft-saved.git
+  git-token: example
+  git-user: example

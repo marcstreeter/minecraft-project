@@ -94,8 +94,18 @@ spec:
               configMapKeyRef:
                 name: minecraft
                 key: git-url
+          - name: GITUSER
+            valueFrom:
+              configMapKeyRef:
+                name: minecraft
+                key: git-user
+          - name: GITTOKEN
+            valueFrom:
+              configMapKeyRef:
+                name: minecraft
+                key: git-token
           command: ['/bin/sh']
-          args: ['-c', "if [ -d .git ]; then echo 'already cloned'; else git clone $(GITURL) .; fi"]
+          args: ['-c', "if [ -d .git ]; then echo 'already cloned'; else git clone https://$(GITUSER):$(GITTOKEN)@$(GITURL) .; fi"]
           volumeMounts:
           - name: worldfiles
             mountPath: /srv/minecraft
@@ -104,17 +114,6 @@ spec:
       volumes:
         - name: worldfiles
           emptyDir: {}
-        - name: ssh
-          configMap:
-            name: minecraft
-            defaultMode: 256
-            items:
-            - key: id_rsa
-              path: id_rsa
-            - key: id_rsa.pub
-              path: id_rsa.pub
-            - key: known_hosts
-              path: known_hosts
 ---
 apiVersion: v1
 kind: Service
