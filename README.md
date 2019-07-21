@@ -36,3 +36,16 @@ For now this project expects that you apply a label to one of your nodes (it doe
 ```
 kubectl label nodes <your-node-name> special=minecraft
 ```
+
+## Reset
+
+Can set to a previous saved state
+```bash
+git reset --hard <COMMIT_HASH>
+git push -f origin master
+```
+(TODO make this done via an API call)
+
+### TODO
+
+- smush commits periodically according to max time being stored (give warning that more time means more storage / and longer init times because whole repo must be downloaded)

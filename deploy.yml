@@ -82,8 +82,6 @@ spec:
         volumeMounts:
         - name: worldfiles
           mountPath: /srv/minecraft
-        - name: ssh
-          mountPath: /root/.ssh
       initContainers:
         - name: gitpuller
           image: marcstreeter/utils:v3
@@ -109,8 +107,6 @@ spec:
           volumeMounts:
           - name: worldfiles
             mountPath: /srv/minecraft
-          - name: ssh
-            mountPath: /root/.ssh
       volumes:
         - name: worldfiles
           emptyDir: {}
