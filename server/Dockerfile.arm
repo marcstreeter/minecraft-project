@@ -1,0 +1,14 @@
+FROM balenalib/raspberrypi3-openjdk:8-stretch-run-20191011
+# balenalib/<hw>-<distro>-<lang_stack>:<lang_ver>-<distro_ver>-(build|run)-<yyyymmdd>
+RUN mkdir -p /srv/minecraft
+WORKDIR /srv/minecraft
+RUN apt-get update \
+  && apt-get install wget \
+  && wget https://cdn.getbukkit.org/spigot/spigot-1.14.3.jar -O spigot.jar \
+  && apt-get -y remove wget \
+  && apt-get -y autoremove --purge \
+  && rm -rf /var/lib/apt/lists/*
+RUN mkdir plugins
+ADD Tutorial.jar /plugins/Tutorial.jar
+CMD ["java","-Xms512M","-Xmx2048M","-Dcom.mojang.eula.agree=true","-Dfile.encoding=UTF-8","-jar","spigot.jar","nogui"]
+EXPOSE 25565

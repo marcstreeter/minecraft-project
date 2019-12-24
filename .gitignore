@@ -1,4 +1,8 @@
+### PROJECT ###
 configmap.yml
+
+### OS ###
+.DS_STORE
 
 ### IDE ###
 .idea/*

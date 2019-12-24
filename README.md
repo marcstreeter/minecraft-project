@@ -49,3 +49,12 @@ git push -f origin master
 ### TODO
 
 - smush commits periodically according to max time being stored (give warning that more time means more storage / and longer init times because whole repo must be downloaded)
+
+## Run Locally
+You may run this with a local copy of kubernetes, just (port forward)[https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/] your pod with
+
+```bash
+kubectl port-forward <SPIGOT-POD-NAME> 25565:25565
+```
+and then from within minecraft point to localhost
+
