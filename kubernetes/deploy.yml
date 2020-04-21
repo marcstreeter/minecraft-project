@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,7 +17,9 @@ spec:
     spec:
       containers:
       - name: spigot
-        image: marcstreeter/spigot:v3
+        image: marcstreeter/spigot:v14
+        tty: true
+        stdin: true
         workingDir: /srv/minecraft
         volumeMounts:
           - name: worldfiles
@@ -66,10 +69,9 @@ spec:
           - name: worldfiles
             mountPath: /srv/minecraft/world_the_end
             subPath: world_the_end
-
       - name: refresher
-        image: marcstreeter/utils:v3
-        workingDir: /srv/minecraft
+        image: marcstreeter/utils:v6
+        workingDir: /srv/utils
         env:
         - name: GIT_COMMITTER_NAME
           valueFrom:
@@ -81,15 +83,16 @@ spec:
             configMapKeyRef:
               name: minecraft
               key: git-committer-email
-        - name: MINECRAFT_SERVER_ADDRESS
-          value: "kube.watch:30565"
-        command: ['sh', '-c', 'while true; do sleep 180; commit; done']
+        - name: MINECRAFT_SERVER_PATH
+          value: /srv/minecraft
+        command: ['python']
+        args: ['-m', 'flask', 'run']
         volumeMounts:
         - name: worldfiles
           mountPath: /srv/minecraft
       initContainers:
         - name: gitpuller
-          image: marcstreeter/utils:v3
+          image: marcstreeter/utils:v6
           workingDir: /srv/minecraft
           env:
           - name: GITURL

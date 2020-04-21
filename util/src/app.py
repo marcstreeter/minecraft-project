@@ -1,50 +1,42 @@
-from datetime import datetime as dt
-from pathlib import Path
+from datetime import datetime
+import logging
 
-import click
-from git import (Repo, Actor)
-from mcstatus.server import MinecraftServer
+from flask import (
+    Flask,
+    jsonify,
+)
+
+from libs import game
 
 
-@click.command()
-@click.argument('git-email', envvar='GIT_COMMITTER_EMAIL')
-@click.argument('git-name', envvar='GIT_COMMITTER_NAME')
-@click.argument('server', envvar='MINECRAFT_SERVER_ADDRESS')
-@click.option('-r', '--git-repo', default='.')
-def commit(git_email, git_name, server, git_repo):
-    """git commit utility."""
-    # check to see if users are online
-    server = MinecraftServer.lookup(server)
-    response = server.status()
-    players = response.players.online
+app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
-    if not players: # short circuit empty server
-        print("Nobody's around, skipping")
-        return
-    
-    repo = Repo(git_repo)
-    origin = repo.remote('origin')
 
-    if not origin.exists():
-        print("Unable to push up to non-existent origin")
-        return
-    
-    if not repo.is_dirty(): # short circuit non-changed server
-        print("Nothing has happened yet, skipping")
-        return
-    
+@app.route('/save', methods=['POST'])
+def save():
     try:
-        ts = dt.now().isoformat()
-        repo.index.add(['*'])
-        message = f'snapshot for {players} players at {ts}'
-        committer = Actor(name=git_name, email=git_email)
-        repo.index.commit(message, author=committer, committer=committer)
-        origin.pull()
-        origin.push()
-    except Exception as e:
-        print(f"failed to commit: {e}")
+        logger.debug("saving...")
+        game.save()
+    except:
+        logger.exception("saving failed")
+        return jsonify(response('system error unknown', success=False)), 500
     else:
-        print(f'successfully committed: {message}')
+        logger.debug("saving succeeded")
+        return jsonify(response("saved"))
 
-if __name__ == '__main__':
-    commit()
+
+@app.route('/health', methods=['GET', 'POST'])
+def health():
+    logger.debug("health check {}".format(datetime.now()))
+    return {
+        'message': 'OK',
+        'success': True,
+    }
+
+
+def response(message, success=True) -> dict:
+    return {
+        'message': message,
+        'success': success,
+    }

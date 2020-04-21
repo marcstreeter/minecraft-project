@@ -8,42 +8,39 @@ Here are the steps to get your minecraft server going
 - create world and commit to repository
 - create access tokens[*](https://support.cloudbees.com/hc/en-us/articles/234710368-GitHub-Permissions-and-API-token-Scopes-for-Jenkins)
 - copy `configmap.yml.example` and fill your own details
-- `kubectl apply -f configmap.yml`
-- `kubectl apply -f deploy.yml`
+- `kubectl apply -f kubernetes/configmap.yml`
+- `kubectl apply -f kubernetes/deploy.yml`
 - Enjoy!
 ## Updating Images
-Make changes and then create tag, here we do util image for example
+Test your image before publishing it
+
+```bash
+cd util 
+docker build -f Dockerfile.amd64 . -t minecraftutils
+docker run -e FLASK_ENV=development -it --rm -p 5000:5000 -v "$(pwd)/src:/srv/utils" minecraftutils sh
+$ python -m flask run -h 0.0.0.0 -p 5000
+```
+
+Use guilder to build and publish multiarch images
 
 ```bash
 cd util
-docker build . -t <USERNAME>/<IMAGENAME>:<VERSION>
+guilder build utils --version 6 
+cd ../server
+guilder build spigot --version 14
 ```
 
-then we push up changes
-
-```bash
-docker push <TAG-JUST-SET>
-```
 ## Deploy
 Bring up your server like so
 
 ```
-kubectl apply -f deploy.yml
-```
-
-For now this project expects that you apply a label to one of your nodes (it doesn't yet perform without taking into consideration the node it's currently running on)
-
-```
-kubectl label nodes <your-node-name> special=minecraft
+kubectl apply -f kubernetes/deploy.yml
 ```
 
 ## Reset
 
 Can set to a previous saved state
-```bash
-git reset --hard <COMMIT_HASH>
-git push -f origin master
-```
+
 (TODO make this done via an API call)
 
 ### TODO
