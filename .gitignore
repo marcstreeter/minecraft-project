@@ -1,5 +1,6 @@
 ### PROJECT ###
 kubernetes/configmap.yml
+kubernetes/configmap-*.yml
 
 ### OS ###
 .DS_STORE
