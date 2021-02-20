@@ -1,0 +1,11 @@
+FROM balenalib/raspberrypi3-openjdk:8-stretch-run-20191011
+# balenalib/<hw>-<distro>-<lang_stack>:<lang_ver>-<distro_ver>-(build|run)-<yyyymmdd>
+RUN mkdir -p /srv/waterfall
+WORKDIR /srv/waterfall
+RUN apt-get update \
+    && apt-get -y install wget \
+    && wget https://papermc.io/api/v1/waterfall/1.16/364/download -O waterfall.jar \
+    && apt-get -y remove wget \
+    && apt-get -y autoremove --purge
+CMD ["java","-Xms512M","-Xmx2048M","-jar","waterfall.jar"]
+EXPOSE 25577

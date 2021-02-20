@@ -1,0 +1,130 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spigot-survival-lily
+  labels:
+    app: spigot-survival-lily
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spigot-survival-lily
+  template:
+    metadata:
+      labels:
+        app: spigot-survival-lily
+    spec:
+      nodeSelector:
+        pow: hi
+      containers:
+        - name: spigot
+          image: marcstreeter/spigot:v16
+          tty: true
+          stdin: true
+          workingDir: /srv/minecraft
+          volumeMounts:
+            - name: worldfiles
+              mountPath: /srv/minecraft/banned-ips.json
+              subPath: banned-ips.json
+            - name: worldfiles
+              mountPath: /srv/minecraft/banned-players.json
+              subPath: banned-players.json
+            - name: worldfiles
+              mountPath: /srv/minecraft/bukkit.yml
+              subPath: bukkit.yml
+            - name: worldfiles
+              mountPath: /srv/minecraft/commands.yml
+              subPath: commands.yml
+            - name: worldfiles
+              mountPath: /srv/minecraft/help.yml
+              subPath: help.yml
+            - name: worldfiles
+              mountPath: /srv/minecraft/ops.json
+              subPath: ops.json
+            - name: worldfiles
+              mountPath: /srv/minecraft/permissions.yml
+              subPath: permissions.yml
+            - name: worldfiles
+              mountPath: /srv/minecraft/plugins
+              subPath: plugins
+            - name: worldfiles
+              mountPath: /srv/minecraft/server.properties
+              subPath: server.properties
+            - name: worldfiles
+              mountPath: /srv/minecraft/spigot.yml
+              subPath: spigot.yml
+            - name: worldfiles
+              mountPath: /srv/minecraft/usercache.json
+              subPath: usercache.json
+            - name: worldfiles
+              mountPath: /srv/minecraft/whitelist.json
+              subPath: whitelist.json
+            - name: worldfiles
+              mountPath: /srv/minecraft/world
+              subPath: world
+        - name: refresher
+          image: marcstreeter/utils:v7
+          workingDir: /srv/utils
+          env:
+            - name: GIT_COMMITTER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: spigot-survival-lily
+                  key: git-committer-name
+            - name: GIT_COMMITTER_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: spigot-survival-lily
+                  key: git-committer-email
+            - name: MINECRAFT_SERVER_PATH
+              value: /srv/minecraft
+          command: ["python"]
+          args: ["-m", "flask", "run"]
+          volumeMounts:
+            - name: worldfiles
+              mountPath: /srv/minecraft
+      initContainers:
+        - name: gitpuller
+          image: marcstreeter/utils:v7
+          workingDir: /srv/minecraft
+          env:
+            - name: GITURL
+              valueFrom:
+                configMapKeyRef:
+                  name: spigot-survival-lily
+                  key: git-url
+            - name: GITUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: spigot-survival-lily
+                  key: git-user
+            - name: GITTOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: spigot-survival-lily
+                  key: git-token
+          command: ["/bin/sh"]
+          args:
+            [
+              "-c",
+              "if [ -d .git ]; then echo 'already cloned'; else git clone https://$(GITUSER):$(GITTOKEN)@$(GITURL) .; fi",
+            ]
+          volumeMounts:
+            - name: worldfiles
+              mountPath: /srv/minecraft
+      volumes:
+        - name: worldfiles
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spigot-survival-lily
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 25565
+  selector:
+    app: spigot-survival-lily

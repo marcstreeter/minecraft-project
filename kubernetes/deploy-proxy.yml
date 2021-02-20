@@ -1,0 +1,90 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spigot-proxy
+spec:
+  selector:
+    matchLabels:
+      app: spigot-proxy
+  template:
+    metadata:
+      labels:
+        app: spigot-proxy
+    spec:
+      nodeSelector:
+        pow: hi
+      containers:
+      - name: spigot-proxy
+        image: marcstreeter/spigot-proxy:v1
+        resources:
+          limits:
+            memory: "2048Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 25577
+        volumeMounts:
+          - name: proxyfiles
+            mountPath: /srv/waterfall/banned-ips.json
+            subPath: banned-ips.json
+          - name: proxyfiles
+            mountPath: /srv/waterfall/modules
+            subPath: modules
+          - name: proxyfiles
+            mountPath: /srv/waterfall/config.yml
+            subPath: config.yml
+          - name: proxyfiles
+            mountPath: /srv/waterfall/locations.yml
+            subPath: locations.yml
+          - name: proxyfiles
+            mountPath: /srv/waterfall/modules.yml
+            subPath: modules.yml
+          - name: proxyfiles
+            mountPath: /srv/waterfall/README.md
+            subPath: README.md
+          - name: proxyfiles
+            mountPath: /srv/waterfall/server-icon.png
+            subPath: server-icon.png
+      initContainers:
+        - name: gitpuller
+          image: marcstreeter/utils:v7
+          workingDir: /srv/waterfall
+          env:
+          - name: GITURL
+            valueFrom:
+              configMapKeyRef:
+                name: spigot-proxy
+                key: git-url
+          - name: GITUSER
+            valueFrom:
+              configMapKeyRef:
+                name: spigot-proxy
+                key: git-user
+          - name: GITTOKEN
+            valueFrom:
+              configMapKeyRef:
+                name: spigot-proxy
+                key: git-token
+          command: ['/bin/sh']
+          args: ['-c', "if [ -d .git ]; then echo 'already cloned'; else git clone https://$(GITUSER):$(GITTOKEN)@$(GITURL) .; fi"]
+          volumeMounts:
+          - name: proxyfiles
+            mountPath: /srv/waterfall
+      volumes:
+        - name: proxyfiles
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spigot-proxy
+spec:
+  type: NodePort
+  ports:
+   - protocol: TCP
+     port: 25577
+     targetPort: 25577 # bungeecord port default
+     nodePort: 30565
+  selector:
+    app: spigot-proxy
+
