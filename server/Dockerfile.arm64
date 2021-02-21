@@ -1,10 +1,10 @@
-FROM balenalib/raspberrypi4-64-openjdk:8-stretch-run
+FROM adoptopenjdk/openjdk8:aarch64-ubuntu-jdk8u282-b08-slim
 # balenalib/<hw>-<distro>-<lang_stack>:<lang_ver>-<distro_ver>-(build|run)-<yyyymmdd>
 RUN mkdir -p /srv/minecraft
 WORKDIR /srv/minecraft
 RUN apt-get update \
   && apt-get install wget \
-  && wget https://papermc.io/api/v1/paper/1.16.1/91/download -O paper.jar \
+  && wget https://papermc.io/api/v1/paper/1.16.5/470/download -O paper.jar \
   && apt-get -y remove wget \
   && apt-get -y autoremove --purge \
   && rm -rf /var/lib/apt/lists/*
