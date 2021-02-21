@@ -2,9 +2,9 @@ FROM openjdk:8u212-b04-jdk-stretch
 RUN mkdir -p /srv/waterfall
 WORKDIR /srv/waterfall
 RUN apt-get update \
-    && apt-get -y install wget \
-    && wget https://papermc.io/api/v1/waterfall/1.16/395/download -O waterfall.jar \
-    && apt-get -y remove wget \
-    && apt-get -y autoremove --purge
+  && apt-get -y install wget \
+  && wget https://papermc.io/api/v1/waterfall/1.16/395/download -O waterfall.jar \
+  && apt-get -y remove wget \
+  && apt-get -y autoremove --purge
 CMD ["java","-Xms512M","-Xmx2048M","-jar","waterfall.jar"]
 EXPOSE 25577
