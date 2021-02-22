@@ -64,7 +64,7 @@ spec:
             mountPath: /srv/minecraft/world
             subPath: world
       - name: refresher
-        image: marcstreeter/utils:v7
+        image: marcstreeter/utils:v8
         workingDir: /srv/utils
         env:
         - name: GIT_COMMITTER_NAME
@@ -86,7 +86,7 @@ spec:
           mountPath: /srv/minecraft
       initContainers:
         - name: gitpuller
-          image: marcstreeter/utils:v7
+          image: marcstreeter/utils:v8
           workingDir: /srv/minecraft
           env:
           - name: GITURL
