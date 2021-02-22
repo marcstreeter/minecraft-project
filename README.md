@@ -28,6 +28,8 @@ cd util
 guilder build utils --version 6 
 cd ../server
 guilder build spigot --version 14
+cd ../proxy
+guilder build spigot-proxy --version  v2
 ```
 
 ## Deploy
