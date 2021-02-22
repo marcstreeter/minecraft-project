@@ -16,7 +16,7 @@ spec:
         pow: hi
       containers:
       - name: spigot-proxy
-        image: marcstreeter/spigot-proxy:v1
+        image: marcstreeter/spigot-proxy:v2
         resources:
           limits:
             memory: "2048Mi"
