@@ -4,7 +4,7 @@ RUN mkdir -p /srv/minecraft
 WORKDIR /srv/minecraft
 RUN apt-get update \
   && apt-get -y install wget \
-  && wget https://papermc.io/api/v1/paper/1.16.5/470/download -O paper.jar \
+  && wget https://papermc.io/api/v1/paper/1.16.5/778/download -O paper.jar \
   && apt-get -y remove wget \
   && apt-get -y autoremove --purge \
   && rm -rf /var/lib/apt/lists/*
