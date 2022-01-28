@@ -16,7 +16,7 @@ spec:
         pow: hi
       containers:
       - name: spigot-proxy
-        image: marcstreeter/proxy:v3
+        image: marcstreeter/proxy:vv4
         resources:
           limits:
             memory: "2048Mi"
@@ -47,7 +47,7 @@ spec:
             subPath: server-icon.png
       initContainers:
         - name: gitpuller
-          image: marcstreeter/utils:v8
+          image: marcstreeter/utils:v9
           workingDir: /srv/waterfall
           env:
           - name: GITURL

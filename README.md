@@ -11,6 +11,16 @@ Here are the steps to get your minecraft server going
 - `kubectl apply -f kubernetes/configmap.yml`
 - `kubectl apply -f kubernetes/deploy.yml`
 - Enjoy!
+
+## Setup - nodes
+The nodes need to be labeled in order to run as running on raspberry pi's is not optimal for minecraft servers
+```
+kubectl label nodes k3sruth pow=hi
+kubectl label nodes k3sluke pow=hi
+kubectl label nodes k3snena pow=hi
+kubectl label nodes k3seric pow=hi
+kubectl label nodes k3sjoseph pow=hi
+```
 ## Updating Images
 Test your image before publishing it
 
@@ -21,29 +31,28 @@ docker run -e FLASK_ENV=development -it --rm -p 5000:5000 -v "$(pwd)/src:/srv/ut
 $ python -m flask run -h 0.0.0.0 -p 5000
 ```
 
-Use guilder to build and publish multiarch images
+Use [guilder](https://github.com/marcstreeter/guilder) to build and publish multiarch images
 
 ```bash
+# activate your guilder conda environment whatever its called
 cd util
-guilder build utils --version 6 
+guilder build utils --version 9
 cd ../server
-guilder build spigot --version 14
+guilder build spigot --version 19
 cd ../proxy
-guilder build spigot-proxy --version  v2
+guilder build proxy --version 4
 ```
 
 ## Deploy
 Bring up your server like so
 
 ```
-kubectl apply -f kubernetes/deploy.yml
+kubectl apply -f kubernetes/
 ```
 
 ## Reset
 
-Can set to a previous saved state
-
-(TODO make this done via an API call)
+Can set to a previous saved state in game with `/save` or via api call in `utils` container (TODO put api call here)
 
 ### TODO
 

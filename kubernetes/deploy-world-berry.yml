@@ -19,7 +19,7 @@ spec:
         pow: hi
       containers:
       - name: spigot
-        image: marcstreeter/spigot:v18
+        image: marcstreeter/spigot:v20
         tty: true
         stdin: true
         workingDir: /srv/minecraft
@@ -64,7 +64,7 @@ spec:
             mountPath: /srv/minecraft/world
             subPath: world
       - name: refresher
-        image: marcstreeter/utils:v8
+        image: marcstreeter/utils:v9
         workingDir: /srv/utils
         env:
         - name: GIT_COMMITTER_NAME
@@ -86,7 +86,7 @@ spec:
           mountPath: /srv/minecraft
       initContainers:
         - name: gitpuller
-          image: marcstreeter/utils:v8
+          image: marcstreeter/utils:v9
           workingDir: /srv/minecraft
           env:
           - name: GITURL
