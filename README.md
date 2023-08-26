@@ -25,30 +25,7 @@ make label
 
 ## Updating Images
 
-Test your image before publishing it
-
-```bash
-cd util
-docker build -f Dockerfile.amd64 . -t minecraftutils
-docker run -e FLASK_ENV=development -it --rm -p 5000:5000 -v "$(pwd)/src:/srv/utils" minecraftutils sh
-$ python -m flask run -h 0.0.0.0 -p 5000
-```
-
-Use [guilder](https://github.com/marcstreeter/guilder) to build and publish multiarch images
-
-```bash
-# activate your guilder environment whatever its called
-# cd <PATH TO GUILDER REPOSITORY>
-# poetry install
-# poetry shell
-# cd <PATH TO HERE>
-cd util
-guilder build utils --version 9
-cd ../server
-guilder build spigot --version 25
-cd ../proxy
-guilder build proxy --version 9
-```
+Happens via GitHub Actions!
 
 ## Deploy
 
