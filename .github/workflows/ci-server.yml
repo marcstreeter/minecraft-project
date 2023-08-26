@@ -1,0 +1,25 @@
+name: build our image
+
+on:
+  push:
+    paths:
+      - server/**
+    branches: master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: install buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+      - name: build the server image
+        working-directory: ./server
+        run: |
+          docker buildx build \
+            --tag marcstreeter/spigot:latest \
+            --platform linux/amd64,linux/arm/v7,linux/arm64 .
