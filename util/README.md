@@ -1,3 +1,3 @@
 # Minecraft Server: Util
 
-This utility is installed as a sidecar of every "world". It is meant to enable saving.
+The server utility is installed as a sidecar of every "world". It is meant to enable saving and loading of worlds.
