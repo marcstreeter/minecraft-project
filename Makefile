@@ -1,6 +1,12 @@
 KUBE_CONTEXT=local
 NAMESPACE=yicraft
-.PHONY: label up
+.PHONY: label up check-server check-proxy
+
+check-curl:
+	@which curl > /dev/null || (echo "curl is not installed, in what world do you live in?"; exit 1)
+
+check-jq:
+	@which jq > /dev/null || (echo "jq is not installed, use 'brew install jq' to proceed."; exit 1)
 
 with_ctx:
 	@kubectl config use-context $(KUBE_CONTEXT)
@@ -23,3 +29,17 @@ up: with_ns
 
 down: with_ns
 	kubectl -n $(NAMESPACE) delete -f kubernetes/
+
+check-server: check-jq check-curl
+	@curl -s https://api.papermc.io/v2/projects/paper/ \
+	| jq '.versions | .[-3:]' \
+	| jq  --raw-output '.[]' \
+	| xargs -I {} curl -s "https://api.papermc.io/v2/projects/paper/versions/{}/builds/" \
+	| jq --raw-output '.builds | max_by(.build) | .downloads.application.name'
+
+check-proxy: check-jq check-curl
+	@curl -s https://api.papermc.io/v2/projects/waterfall/ \
+	| jq '.versions | .[-3:]' \
+	| jq  --raw-output '.[]' \
+	| xargs -I {} curl -s "https://api.papermc.io/v2/projects/waterfall/versions/{}/builds/" \
+	| jq --raw-output '.builds | max_by(.build) | .downloads.application.name'
