@@ -43,3 +43,6 @@ check-proxy: check-jq check-curl
 	| jq  --raw-output '.[]' \
 	| xargs -I {} curl -s "https://api.papermc.io/v2/projects/waterfall/versions/{}/builds/" \
 	| jq --raw-output '.builds | max_by(.build) | .downloads.application.name'
+
+check-docker: check-jq check-curl
+	@echo "you need to figure out how to use this url: https://hub.docker.com/v2/repositories/library/eclipse-temurin/tags/?page_size=25&page=1&name=jdk&ordering"
