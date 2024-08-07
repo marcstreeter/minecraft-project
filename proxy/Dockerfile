@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.7_7-jdk-jammy
+FROM eclipse-temurin:21.0.4_7-jdk-jammy
 RUN mkdir -p /srv/waterfall
 WORKDIR /srv/waterfall
 RUN apt-get update \

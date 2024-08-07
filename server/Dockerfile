@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.7_7-jdk-jammy
+FROM eclipse-temurin:21.0.4_7-jdk-jammy
 RUN mkdir -p /srv/minecraft
 WORKDIR /srv/minecraft
 RUN apt-get update \
