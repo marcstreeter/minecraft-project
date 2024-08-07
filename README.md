@@ -60,3 +60,6 @@ kubectl port-forward <SPIGOT-POD-NAME> 25565:25565
 ```
 
 and then from within minecraft point to localhost
+
+# TODO
+- need to stop using latest (increment both version and helm chart reference)
