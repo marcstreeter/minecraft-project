@@ -43,6 +43,7 @@ jobs:
           
           # Update server manifests
           echo "Setting K8s manifests reference for marcstreeter/spigot to most recent published version: $SERVER_VERSION"
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-hub.yml
           sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world.yml
           sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world-berry.yml
           sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world-ice.yml
