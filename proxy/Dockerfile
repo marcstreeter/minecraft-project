@@ -6,5 +6,5 @@ RUN apt-get update \
   && wget https://api.papermc.io/v2/projects/velocity/versions/3.4.0-SNAPSHOT/builds/522/downloads/velocity-3.4.0-SNAPSHOT-522.jar -O velocity.jar \
   && apt-get -y remove wget \
   && apt-get -y autoremove --purge
-CMD ["java","-Xms512M","-Xmx2048M","-jar","velocity.jar"]
 EXPOSE 25577
+CMD ["java","-Xms512M","-Xmx2048M","-jar","velocity.jar"]

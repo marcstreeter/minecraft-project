@@ -17,6 +17,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: checkout code
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: install buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
@@ -29,3 +31,20 @@ jobs:
             --push \
             --tag marcstreeter/proxy:latest \
             --platform linux/amd64,linux/arm64 .
+      - name: Install Just
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+      - name: Get latest version and update manifest
+        run: |
+          LATEST_VERSION=$(just get-latest-server-version marcstreeter/proxy)
+          echo "Latest version: $LATEST_VERSION"
+          
+          # Update the proxy K8s manifest
+          sed -i "s|image: marcstreeter/proxy:.*|image: marcstreeter/proxy:$LATEST_VERSION|g" kubernetes/deploy-proxy.yml
+          
+          # Commit changes
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add kubernetes/deploy-proxy.yml
+          git commit -m "Update proxy image to $LATEST_VERSION"
+          git push

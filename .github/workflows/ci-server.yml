@@ -17,6 +17,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: checkout code
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: install buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
@@ -29,3 +31,25 @@ jobs:
             --push \
             --tag marcstreeter/spigot:latest \
             --platform linux/amd64,linux/arm64 .
+      - name: Install Just
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+      - name: Get latest version and update manifests
+        run: |
+          LATEST_VERSION=$(just get-latest-server-version marcstreeter/spigot)
+          echo "Latest version: $LATEST_VERSION"
+          
+          # Update all server K8s manifests
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$LATEST_VERSION|g" kubernetes/deploy-world.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$LATEST_VERSION|g" kubernetes/deploy-world-berry.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$LATEST_VERSION|g" kubernetes/deploy-world-ice.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$LATEST_VERSION|g" kubernetes/deploy-world-lily.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$LATEST_VERSION|g" kubernetes/deploy-world-sand.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$LATEST_VERSION|g" kubernetes/deploy-world-wood.yml
+          
+          # Commit changes
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add kubernetes/deploy-world*.yml
+          git commit -m "Update server image to $LATEST_VERSION"
+          git push
