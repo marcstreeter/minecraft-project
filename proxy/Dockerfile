@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.15_6-jdk-noble
+FROM eclipse-temurin:21.0.7_6-jdk-noble
 RUN mkdir -p /srv/velocity
 WORKDIR /srv/velocity
 RUN apt-get update \

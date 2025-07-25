@@ -19,7 +19,7 @@ spec:
         pow: hi
       containers:
         - name: spigot
-          image: marcstreeter/spigot:v25
+          image: marcstreeter/spigot:latest
           tty: true
           stdin: true
           workingDir: /srv/minecraft

@@ -28,4 +28,4 @@ jobs:
           docker buildx build \
             --push \
             --tag marcstreeter/proxy:latest \
-            --platform linux/amd64,linux/arm/v7,linux/arm64 .
+            --platform linux/amd64,linux/arm64 .
