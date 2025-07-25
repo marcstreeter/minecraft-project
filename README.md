@@ -4,6 +4,16 @@ This project accompanies the article series on running Minecraft in Docker and
 writing Minecraft plugins to integrate with IBM Cloud.
 Read the article series at: https://www.ibm.com/developerworks/cloud/library/cl-bluemix-minecraft-docker-trs-1/index.html
 
+## Requirements
+- [kubectl]
+- [just]
+- [jq]
+- [curl]
+- [awk]
+- [sed]
+
+NOTE: many of these can be installed with either [brew] or [asdf]
+
 ## Setup
 
 Here are the steps to get your minecraft server going
@@ -15,12 +25,21 @@ Here are the steps to get your minecraft server going
 - `kubectl apply -f kubernetes/deploy.yml`
 - Enjoy!
 
+## justfile
+
+This project uses a [justfile](https://github.com/casey/just) for task automation. If you don't have `just` installed, you can install it with:
+
+```bash
+brew install just  # macOS
+# or see https://github.com/casey/just#installation for other platforms
+```
+
 ## Setup - nodes
 
 The nodes need to be labeled in order to run as running on raspberry pi's is not optimal for minecraft servers
 
 ```
-make label
+just label
 ```
 
 ## Updating Images
@@ -32,7 +51,7 @@ Happens via GitHub Actions!
 Bring up your server like so
 
 ```
-make up
+just up
 ```
 
 ## Destroy
@@ -40,7 +59,7 @@ make up
 Tear down server like so
 
 ```
-make down
+just down
 ```
 
 ## Reset
@@ -60,3 +79,12 @@ kubectl port-forward <SPIGOT-POD-NAME> 25565:25565
 ```
 
 and then from within minecraft point to localhost
+
+[just]: https://github.com/casey/just
+[asdf]: https://asdf-vm.com/
+[kubectl]: https://kubernetes.io/docs/reference/kubectl/
+[brew]: https://brew.sh/
+[jq]: https://jqlang.org
+[curl]: https://curl.se
+[awk]: https://www.gnu.org/software/gawk/manual/gawk.html
+[sed]: https://www.gnu.org/software/sed/manual/sed.html

@@ -1,10 +1,10 @@
-FROM eclipse-temurin:17.0.7_7-jdk-jammy
-RUN mkdir -p /srv/waterfall
-WORKDIR /srv/waterfall
+FROM eclipse-temurin:17.0.15_6-jdk-noble
+RUN mkdir -p /srv/velocity
+WORKDIR /srv/velocity
 RUN apt-get update \
   && apt-get -y install wget \
-  && wget https://api.papermc.io/v2/projects/waterfall/versions/1.20/builds/545/downloads/waterfall-1.20-545.jar -O waterfall.jar \
+  && wget https://api.papermc.io/v2/projects/velocity/versions/3.4.0-SNAPSHOT/builds/522/downloads/velocity-3.4.0-SNAPSHOT-522.jar -O velocity.jar \
   && apt-get -y remove wget \
   && apt-get -y autoremove --purge
-CMD ["java","-Xms512M","-Xmx2048M","-jar","waterfall.jar"]
+CMD ["java","-Xms512M","-Xmx2048M","-jar","velocity.jar"]
 EXPOSE 25577
