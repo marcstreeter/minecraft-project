@@ -1,0 +1,45 @@
+# Development values for minecraft-project
+# This file overrides values.yaml for local development
+
+# Use local images for development
+images:
+  spigot:
+    repository: marcstreeter/spigot
+    tag: "local"
+    pullPolicy: IfNotPresent
+  proxy:
+    repository: marcstreeter/proxy
+    tag: "local"
+    pullPolicy: IfNotPresent
+  utils:
+    repository: marcstreeter/utils
+    tag: "local"
+    pullPolicy: IfNotPresent
+
+# Development configuration
+development:
+  enabled: true
+  localImages: true
+  portForwards:
+    proxy: 25577
+    hub: 25565
+    survival: 25566
+    berry: 25567
+    ice: 25568
+    lily: 25569
+    sand: 25570
+    wood: 25571
+
+# Reduce resource limits for local development
+global:
+  resources:
+    limits:
+      memory: "1024Mi"
+      cpu: "250m"
+    requests:
+      memory: "512Mi"
+      cpu: "100m"
+
+# Disable node selector for local development
+global:
+  nodeSelector: null

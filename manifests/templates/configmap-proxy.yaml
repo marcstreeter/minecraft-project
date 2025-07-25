@@ -1,0 +1,15 @@
+{{- if .Values.proxy.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "minecraft-project.fullname" . }}-proxy
+  labels:
+    {{- include "minecraft-project.labels" . | nindent 4 }}
+    app.kubernetes.io/component: proxy
+data:
+  git-committer-name: {{ .Values.proxy.git.committerName | quote }}
+  git-committer-email: {{ .Values.proxy.git.committerEmail | quote }}
+  git-url: {{ .Values.proxy.git.url | quote }}
+  git-token: {{ .Values.proxy.git.token | quote }}
+  git-user: {{ .Values.proxy.git.user | quote }}
+{{- end }} 

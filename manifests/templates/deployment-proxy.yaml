@@ -1,28 +1,35 @@
----
+{{- if .Values.proxy.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spigot-proxy
+  name: {{ include "minecraft-project.fullname" . }}-proxy
+  labels:
+    {{- include "minecraft-project.labels" . | nindent 4 }}
+    app.kubernetes.io/component: proxy
 spec:
+  replicas: {{ .Values.proxy.replicaCount }}
   selector:
     matchLabels:
-      app: spigot-proxy
+      {{- include "minecraft-project.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: proxy
   template:
     metadata:
       labels:
-        app: spigot-proxy
+        {{- include "minecraft-project.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: proxy
     spec:
+      {{- with .Values.global.nodeSelector }}
       nodeSelector:
-        pow: hi
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: spigot-proxy
-          image: marcstreeter/proxy:v10
+          image: {{ include "minecraft-project.proxyImage" . }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           resources:
-            limits:
-              memory: "2048Mi"
-              cpu: "500m"
+            {{- toYaml .Values.global.resources | nindent 12 }}
           ports:
-            - containerPort: 25577
+            - containerPort: {{ .Values.proxy.service.port }}
           volumeMounts:
             - name: proxyfiles
               mountPath: /srv/velocity/banned-ips.json
@@ -47,23 +54,23 @@ spec:
               subPath: server-icon.png
       initContainers:
         - name: gitpuller
-          image: marcstreeter/utils:v11
+          image: {{ include "minecraft-project.utilsImage" . }}
           workingDir: /srv/velocity
           env:
             - name: GITURL
               valueFrom:
                 configMapKeyRef:
-                  name: spigot-proxy
+                  name: {{ include "minecraft-project.fullname" . }}-proxy
                   key: git-url
             - name: GITUSER
               valueFrom:
                 configMapKeyRef:
-                  name: spigot-proxy
+                  name: {{ include "minecraft-project.fullname" . }}-proxy
                   key: git-user
             - name: GITTOKEN
               valueFrom:
                 configMapKeyRef:
-                  name: spigot-proxy
+                  name: {{ include "minecraft-project.fullname" . }}-proxy
                   key: git-token
           command: ["/bin/sh"]
           args:
@@ -77,17 +84,4 @@ spec:
       volumes:
         - name: proxyfiles
           emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: spigot-proxy
-spec:
-  type: NodePort
-  ports:
-    - protocol: TCP
-      port: 25577
-      targetPort: 25577 # bungeecord port default
-      nodePort: 30565
-  selector:
-    app: spigot-proxy
+{{- end }} 

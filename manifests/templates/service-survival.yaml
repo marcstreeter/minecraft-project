@@ -1,0 +1,23 @@
+{{- if .Values.survival.enabled }}
+{{- range $worldName, $worldConfig := .Values.survival.worlds }}
+{{- if $worldConfig.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "minecraft-project.fullname" $ }}-survival-{{ $worldName }}
+  labels:
+    {{- include "minecraft-project.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: survival-{{ $worldName }}
+spec:
+  type: {{ $worldConfig.service.type }}
+  ports:
+    - protocol: TCP
+      port: {{ $worldConfig.service.port }}
+      targetPort: {{ $worldConfig.service.port }}
+  selector:
+    {{- include "minecraft-project.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: survival-{{ $worldName }}
+{{- end }}
+{{- end }}
+{{- end }} 

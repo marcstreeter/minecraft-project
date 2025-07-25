@@ -72,6 +72,8 @@ Can set to a previous saved state in game with `/save` or via api call in `utils
 
 ## Run Locally
 
+### Option 1: Manual Kubernetes Setup
+
 You may run this with a local copy of kubernetes, just (port forward)[https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/] your pod with
 
 ```bash
@@ -79,6 +81,40 @@ kubectl port-forward <SPIGOT-POD-NAME> 25565:25565
 ```
 
 and then from within minecraft point to localhost
+
+### Option 2: Helm Chart Deployment (Recommended)
+
+For production and development, use the Helm chart:
+
+1. **Install the Helm chart**:
+   ```bash
+   just helm-install
+   ```
+
+2. **Check status**:
+   ```bash
+   just helm-status
+   ```
+
+3. **Upgrade the chart**:
+   ```bash
+   just helm-upgrade
+   ```
+
+See [HELM_README.md](HELM_README.md) for detailed instructions on using the Helm chart.
+
+### Option 3: Tilt Development Environment
+
+For local development with live updates, use Tilt with Helm:
+
+1. **Start the development environment**:
+   ```bash
+   just dev-helm
+   ```
+
+2. **Access the Tilt UI**: Open [http://localhost:10350](http://localhost:10350) in your browser
+
+See [TILT_README.md](TILT_README.md) for detailed instructions on using Tilt for local development.
 
 # TODO
 - need to stop using latest (increment both version and helm chart reference)

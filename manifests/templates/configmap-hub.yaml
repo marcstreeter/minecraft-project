@@ -1,0 +1,15 @@
+{{- if .Values.hub.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "minecraft-project.fullname" . }}-hub
+  labels:
+    {{- include "minecraft-project.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hub
+data:
+  git-committer-name: {{ .Values.hub.git.committerName | quote }}
+  git-committer-email: {{ .Values.hub.git.committerEmail | quote }}
+  git-url: {{ .Values.hub.git.url | quote }}
+  git-token: {{ .Values.hub.git.token | quote }}
+  git-user: {{ .Values.hub.git.user | quote }}
+{{- end }} 

@@ -3,6 +3,14 @@ KUBE_CONTEXT := "local"
 NAMESPACE := "yicraft"
 HIGH_POWER_NODES := "k3sruth k3sluke k3sjane k3snena k3sjose server-mini-b server-mini-c server-mini-d"
 
+# Check if tilt is installed
+_check-tilt:
+    which tilt > /dev/null || (echo "tilt is not installed, install from https://docs.tilt.dev/install.html"; exit 1)
+
+# Check if helm is installed
+_check-helm:
+    which helm > /dev/null || (echo "helm is not installed, install from https://helm.sh/docs/intro/install/"; exit 1)
+
 # Helper recipes
 check-curl:
     which curl > /dev/null || (echo "curl is not installed, in what world do you live in?"; exit 1)
@@ -10,8 +18,8 @@ check-curl:
 check-jq:
     which jq > /dev/null || (echo "jq is not installed, use 'brew install jq' to proceed."; exit 1)
 
-with-ctx:
-    kubectl config use-context {{KUBE_CONTEXT}}
+with-ctx context="{{KUBE_CONTEXT}}":
+    kubectl config use-context {{context}}
 
 with-ns: with-ctx
     #!/usr/bin/env bash
@@ -74,3 +82,11 @@ build:
     just build-server marcstreeter/spigot
     just build-server marcstreeter/proxy
     echo "both builds complete"
+
+dev: 
+    just with-ctx docker-desktop
+    tilt up
+
+# Show available commands
+default:
+    @just --list

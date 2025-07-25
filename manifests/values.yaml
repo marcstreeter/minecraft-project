@@ -1,0 +1,157 @@
+# Default values for minecraft-project
+# This is a YAML-formatted file.
+
+# Global configuration
+global:
+  namespace: yicraft
+  imageRegistry: ""
+  imagePullPolicy: IfNotPresent
+  nodeSelector:
+    pow: hi
+  resources:
+    limits:
+      memory: "2048Mi"
+      cpu: "500m"
+    requests:
+      memory: "1024Mi"
+      cpu: "250m"
+
+# Image configurations
+images:
+  spigot:
+    repository: marcstreeter/spigot
+    tag: "v28"
+    pullPolicy: IfNotPresent
+  proxy:
+    repository: marcstreeter/proxy
+    tag: "v10"
+    pullPolicy: IfNotPresent
+  utils:
+    repository: marcstreeter/utils
+    tag: "v11"
+    pullPolicy: IfNotPresent
+
+# Proxy server configuration
+proxy:
+  enabled: true
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 25577
+    nodePort: 30565
+  git:
+    committerName: "Marc Streeter"
+    committerEmail: "mstreeter@gmail.com"
+    url: "github.com/marcstreeter/minecraft-proxy-saved.git"
+    token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
+    user: "marcstreeter"
+
+# Hub server configuration
+hub:
+  enabled: true
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 25565
+  git:
+    committerName: "Marc Streeter"
+    committerEmail: "mstreeter@gmail.com"
+    url: "github.com/marcstreeter/minecraft-hub-saved.git"
+    token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
+    user: "marcstreeter"
+
+# Survival worlds configuration
+survival:
+  enabled: true
+  worlds:
+    main:
+      enabled: true
+      replicaCount: 1
+      service:
+        type: NodePort
+        port: 25565
+      git:
+        committerName: "Marc Streeter"
+        committerEmail: "mstreeter@gmail.com"
+        url: "github.com/marcstreeter/minecraft-saved.git"
+        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
+        user: "marcstreeter"
+    
+    berry:
+      enabled: true
+      replicaCount: 1
+      service:
+        type: NodePort
+        port: 25565
+      git:
+        committerName: "Marc Streeter"
+        committerEmail: "mstreeter@gmail.com"
+        url: "github.com/marcstreeter/minecraft-survival-berry-saved.git"
+        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
+        user: "marcstreeter"
+    
+    ice:
+      enabled: true
+      replicaCount: 1
+      service:
+        type: NodePort
+        port: 25565
+      git:
+        committerName: "Marc Streeter"
+        committerEmail: "mstreeter@gmail.com"
+        url: "github.com/marcstreeter/minecraft-survival-ice-saved.git"
+        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
+        user: "marcstreeter"
+    
+    lily:
+      enabled: true
+      replicaCount: 1
+      service:
+        type: NodePort
+        port: 25565
+      git:
+        committerName: "Marc Streeter"
+        committerEmail: "mstreeter@gmail.com"
+        url: "github.com/marcstreeter/minecraft-survival-lily-saved.git"
+        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
+        user: "marcstreeter"
+    
+    sand:
+      enabled: true
+      replicaCount: 1
+      service:
+        type: NodePort
+        port: 25565
+      git:
+        committerName: "Marc Streeter"
+        committerEmail: "mstreeter@gmail.com"
+        url: "github.com/marcstreeter/minecraft-survival-sand-saved.git"
+        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
+        user: "marcstreeter"
+    
+    wood:
+      enabled: true
+      replicaCount: 1
+      service:
+        type: NodePort
+        port: 25565
+      git:
+        committerName: "Marc Streeter"
+        committerEmail: "mstreeter@gmail.com"
+        url: "github.com/marcstreeter/minecraft-survival-wood-saved.git"
+        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
+        user: "marcstreeter"
+
+# Development configuration
+development:
+  enabled: false
+  localImages: false
+  portForwards:
+    proxy: 25577
+    hub: 25565
+    survival: 25566
+    berry: 25567
+    ice: 25568
+    lily: 25569
+    sand: 25570
+    wood: 25571 
