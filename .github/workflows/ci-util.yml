@@ -19,6 +19,17 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Just
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+      - name: Determine version to build
+        id: version
+        run: |
+          LATEST_VERSION=$(just get-latest-server-version marcstreeter/utils)
+          NEW_VERSION=$(just increment-version $LATEST_VERSION)
+          echo "Latest version: $LATEST_VERSION"
+          echo "New version: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
       - name: install buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
@@ -30,28 +41,29 @@ jobs:
           docker buildx build \
             --push \
             --tag marcstreeter/utils:latest \
+            --tag marcstreeter/utils:${{ steps.version.outputs.new_version }} \
             --platform linux/amd64,linux/arm/v7,linux/arm64 .
-      - name: Install Just
+      - name: Verify published version and update manifests
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
-      - name: Get latest version and update manifests
-        run: |
-          LATEST_VERSION=$(just get-latest-server-version marcstreeter/utils)
-          echo "Latest version: $LATEST_VERSION"
+          PUBLISHED_VERSION=$(just get-latest-server-version marcstreeter/utils)
+          echo "Setting K8s manifests reference for marcstreeter/utils to most recent published version: $PUBLISHED_VERSION"
           
           # Update all util K8s manifests (they use utils image in initContainers and sidecars)
-          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$LATEST_VERSION|g" kubernetes/deploy-world.yml
-          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$LATEST_VERSION|g" kubernetes/deploy-world-berry.yml
-          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$LATEST_VERSION|g" kubernetes/deploy-world-ice.yml
-          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$LATEST_VERSION|g" kubernetes/deploy-world-lily.yml
-          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$LATEST_VERSION|g" kubernetes/deploy-world-sand.yml
-          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$LATEST_VERSION|g" kubernetes/deploy-world-wood.yml
-          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$LATEST_VERSION|g" kubernetes/deploy-proxy.yml
-          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$LATEST_VERSION|g" kubernetes/deploy-hub.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$PUBLISHED_VERSION|g" kubernetes/deploy-world.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$PUBLISHED_VERSION|g" kubernetes/deploy-world-berry.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$PUBLISHED_VERSION|g" kubernetes/deploy-world-ice.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$PUBLISHED_VERSION|g" kubernetes/deploy-world-lily.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$PUBLISHED_VERSION|g" kubernetes/deploy-world-sand.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$PUBLISHED_VERSION|g" kubernetes/deploy-world-wood.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$PUBLISHED_VERSION|g" kubernetes/deploy-proxy.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$PUBLISHED_VERSION|g" kubernetes/deploy-hub.yml
+          
+          # Pull latest changes to avoid conflicts
+          git pull origin master
           
           # Commit changes
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add kubernetes/deploy-*.yml
-          git commit -m "Update utils image to $LATEST_VERSION"
+          git commit -m "Update utils image to $PUBLISHED_VERSION"
           git push

@@ -1,3 +1,4 @@
+# to check for latest version run "just check-docker"
 FROM eclipse-temurin:21.0.7_6-jdk-noble
 RUN mkdir -p /srv/velocity
 WORKDIR /srv/velocity

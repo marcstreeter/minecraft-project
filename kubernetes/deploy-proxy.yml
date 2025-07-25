@@ -12,16 +12,6 @@ spec:
       labels:
         app: spigot-proxy
     spec:
-      # affinity:
-      #   nodeAffinity:
-      #     requiredDuringSchedulingIgnoredDuringExecution:
-      #       nodeSelectorTerms:
-      #       - matchExpressions:
-      #         - key: kubernetes.io/hostname
-      #           operator: In
-      #           values:
-      #           - k3sruth
-      #           - k3sjose
       nodeSelector:
         pow: hi
       containers:
