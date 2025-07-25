@@ -1,0 +1,69 @@
+name: Update Kubernetes Manifests
+
+on:
+  workflow_run:
+    workflows: ["build our image"]
+    types:
+      - completed
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-manifests:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install Just
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+      
+      - name: Get latest versions and update all manifests
+        run: |
+          # Get latest published versions for all images
+          PROXY_VERSION=$(just get-latest-server-version marcstreeter/proxy)
+          SERVER_VERSION=$(just get-latest-server-version marcstreeter/spigot)
+          UTILS_VERSION=$(just get-latest-server-version marcstreeter/utils)
+          
+          echo "Latest published versions:"
+          echo "  Proxy: $PROXY_VERSION"
+          echo "  Server: $SERVER_VERSION"
+          echo "  Utils: $UTILS_VERSION"
+          
+          # Update proxy manifest
+          echo "Setting K8s manifests reference for marcstreeter/proxy to most recent published version: $PROXY_VERSION"
+          sed -i "s|image: marcstreeter/proxy:.*|image: marcstreeter/proxy:$PROXY_VERSION|g" kubernetes/deploy-proxy.yml
+          
+          # Update server manifests
+          echo "Setting K8s manifests reference for marcstreeter/spigot to most recent published version: $SERVER_VERSION"
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world-berry.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world-ice.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world-lily.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world-sand.yml
+          sed -i "s|image: marcstreeter/spigot:.*|image: marcstreeter/spigot:$SERVER_VERSION|g" kubernetes/deploy-world-wood.yml
+          
+          # Update utils manifests (used in initContainers and sidecars)
+          echo "Setting K8s manifests reference for marcstreeter/utils to most recent published version: $UTILS_VERSION"
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$UTILS_VERSION|g" kubernetes/deploy-world.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$UTILS_VERSION|g" kubernetes/deploy-world-berry.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$UTILS_VERSION|g" kubernetes/deploy-world-ice.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$UTILS_VERSION|g" kubernetes/deploy-world-lily.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$UTILS_VERSION|g" kubernetes/deploy-world-sand.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$UTILS_VERSION|g" kubernetes/deploy-world-wood.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$UTILS_VERSION|g" kubernetes/deploy-proxy.yml
+          sed -i "s|image: marcstreeter/utils:.*|image: marcstreeter/utils:$UTILS_VERSION|g" kubernetes/deploy-hub.yml
+          
+          # Commit all changes in a single atomic operation
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add kubernetes/deploy-*.yml
+          git commit -m "Update all image references: proxy=$PROXY_VERSION, server=$SERVER_VERSION, utils=$UTILS_VERSION"
+          git push 
