@@ -3,11 +3,9 @@ KUBE_CONTEXT := "local"
 NAMESPACE := "yicraft"
 HIGH_POWER_NODES := "k3sruth k3sluke k3sjane k3snena k3sjose server-mini-b server-mini-c server-mini-d"
 
-# Check if tilt is installed
 _check-tilt:
     which tilt > /dev/null || (echo "tilt is not installed, install from https://docs.tilt.dev/install.html"; exit 1)
 
-# Check if helm is installed
 _check-helm:
     which helm > /dev/null || (echo "helm is not installed, install from https://helm.sh/docs/intro/install/"; exit 1)
 
@@ -86,7 +84,3 @@ build:
 dev: 
     just with-ctx docker-desktop
     tilt up
-
-# Show available commands
-default:
-    @just --list

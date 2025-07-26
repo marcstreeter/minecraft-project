@@ -15,6 +15,12 @@ global:
     requests:
       memory: "1024Mi"
       cpu: "250m"
+  git:
+    committerName: "${GIT_COMMITTER_NAME}"
+    committerEmail: "${GIT_COMMITTER_EMAIL}"
+    token: "${GIT_TOKEN}"
+    user: "${GIT_USER}"
+  forwardingSecret: "${FORWARDING_SECRET}"
 
 # Image configurations
 images:
@@ -40,11 +46,7 @@ proxy:
     port: 25577
     nodePort: 30565
   git:
-    committerName: "Marc Streeter"
-    committerEmail: "mstreeter@gmail.com"
-    url: "github.com/marcstreeter/minecraft-proxy-saved.git"
-    token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
-    user: "marcstreeter"
+    url: "${GIT_URL_PROXY}"
 
 # Hub server configuration
 hub:
@@ -54,93 +56,65 @@ hub:
     type: NodePort
     port: 25565
   git:
-    committerName: "Marc Streeter"
-    committerEmail: "mstreeter@gmail.com"
-    url: "github.com/marcstreeter/minecraft-hub-saved.git"
-    token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
-    user: "marcstreeter"
+    url: "${GIT_URL_HUB}"
 
 # Survival worlds configuration
 survival:
   enabled: true
   worlds:
-    main:
+    survival:
       enabled: true
       replicaCount: 1
       service:
         type: NodePort
         port: 25565
       git:
-        committerName: "Marc Streeter"
-        committerEmail: "mstreeter@gmail.com"
-        url: "github.com/marcstreeter/minecraft-saved.git"
-        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
-        user: "marcstreeter"
+        url: "${GIT_URL_SURVIVAL}"
     
-    berry:
+    survival-berry:
       enabled: true
       replicaCount: 1
       service:
         type: NodePort
         port: 25565
       git:
-        committerName: "Marc Streeter"
-        committerEmail: "mstreeter@gmail.com"
-        url: "github.com/marcstreeter/minecraft-survival-berry-saved.git"
-        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
-        user: "marcstreeter"
+        url: "${GIT_URL_SURVIVAL_BERRY}"
     
-    ice:
+    survival-ice:
       enabled: true
       replicaCount: 1
       service:
         type: NodePort
         port: 25565
       git:
-        committerName: "Marc Streeter"
-        committerEmail: "mstreeter@gmail.com"
-        url: "github.com/marcstreeter/minecraft-survival-ice-saved.git"
-        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
-        user: "marcstreeter"
+        url: "${GIT_URL_SURVIVAL_ICE}"
     
-    lily:
+    survival-lily:
       enabled: true
       replicaCount: 1
       service:
         type: NodePort
         port: 25565
       git:
-        committerName: "Marc Streeter"
-        committerEmail: "mstreeter@gmail.com"
-        url: "github.com/marcstreeter/minecraft-survival-lily-saved.git"
-        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
-        user: "marcstreeter"
+        url: "${GIT_URL_SURVIVAL_LILY}"
     
-    sand:
+    survival-sand:
       enabled: true
       replicaCount: 1
       service:
         type: NodePort
         port: 25565
       git:
-        committerName: "Marc Streeter"
-        committerEmail: "mstreeter@gmail.com"
-        url: "github.com/marcstreeter/minecraft-survival-sand-saved.git"
-        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
-        user: "marcstreeter"
+        url: "${GIT_URL_SURVIVAL_SAND}"
     
-    wood:
+    survival-wood:
       enabled: true
       replicaCount: 1
       service:
         type: NodePort
         port: 25565
       git:
-        committerName: "Marc Streeter"
-        committerEmail: "mstreeter@gmail.com"
-        url: "github.com/marcstreeter/minecraft-survival-wood-saved.git"
-        token: "8d3a6d25ca7cdae713dc16f5bfac0765713897ec"
-        user: "marcstreeter"
+        url: "${GIT_URL_SURVIVAL_WOOD}"
 
 # Development configuration
 development:

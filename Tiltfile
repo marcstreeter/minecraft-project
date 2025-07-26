@@ -1,19 +1,29 @@
 # Tiltfile for Minecraft Project with Helm
 allow_k8s_contexts('docker-desktop')
+load('ext://dotenv', 'dotenv')
 
-# Load environment variables
-# load('ext://dotenv', 'dotenv')
-# dotenv()
+# CONSTANTS
+DOTENV = dotenv() or {}
+SYSENV = dict(os.environ)
+NAMESPACE = 'yicraft'
 
-# Set namespace
-namespace = 'yicraft'
+# FUNCTIONS: we should move these to their own repo https://docs.tilt.dev/extensions.html#managing-your-own-extension-repo
+def get_env_var(key, default=""):
+    """Get environment variable with priority: dotenv > system env > gcloud secrets > default"""
+    if key in DOTENV:  # Try dotenv first (if .env file exists)
+        return DOTENV[key]
+    
+    if key in SYSENV:  # Try system environment variable
+        return SYSENV[key]
+    
+    return default
 
 # Create namespace if it doesn't exist
 k8s_yaml(encode_yaml({
     'apiVersion': 'v1',
     'kind': 'Namespace',
     'metadata': {
-        'name': namespace
+        'name': NAMESPACE
     }
 }))
 
@@ -28,35 +38,107 @@ docker_build(
     ]
 )
 
-# Build and deploy the proxy server
+# Build and deploy the proxy server with local files
 docker_build(
     'marcstreeter/proxy:local',
-    '.',
-    dockerfile='./proxy/Dockerfile',
+    '../minecraft-proxy-saved',
+    dockerfile='../minecraft-proxy-saved/Dockerfile',
     live_update=[
-        sync('./proxy', '/app/proxy')
+        sync('../minecraft-proxy-saved', '/srv/velocity')
     ]
 )
 
-# Build and deploy the spigot server
+# Build and deploy the hub server with local files
 docker_build(
-    'marcstreeter/spigot:local',
-    '.',
-    dockerfile='./server/Dockerfile',
+    'marcstreeter/spigot:hub-local',
+    '../minecraft-hub-saved',
+    dockerfile='../minecraft-hub-saved/Dockerfile',
     live_update=[
-        sync('./server', '/app/server')
+        sync('../minecraft-hub-saved', '/srv/minecraft')
     ]
 )
 
-# Deploy using Helm chart
+# Build separate images for each survival world with their specific files
+docker_build(
+    'marcstreeter/spigot:survival-local',
+    '../minecraft-survival-saved',
+    dockerfile='../minecraft-survival-saved/Dockerfile',
+    live_update=[
+        sync('../minecraft-survival-saved', '/srv/minecraft')
+    ]
+)
+
+docker_build(
+    'marcstreeter/spigot:survival-berry-local',
+    '../minecraft-survival-berry-saved',
+    dockerfile='../minecraft-survival-berry-saved/Dockerfile',
+    live_update=[
+        sync('../minecraft-survival-berry-saved', '/srv/minecraft')
+    ]
+)
+
+docker_build(
+    'marcstreeter/spigot:survival-ice-local',
+    '../minecraft-survival-ice-saved',
+    dockerfile='../minecraft-survival-ice-saved/Dockerfile',
+    live_update=[
+        sync('../minecraft-survival-ice-saved', '/srv/minecraft')
+    ]
+)
+
+docker_build(
+    'marcstreeter/spigot:survival-lily-local',
+    '../minecraft-survival-lily-saved',
+    dockerfile='../minecraft-survival-lily-saved/Dockerfile',
+    live_update=[
+        sync('../minecraft-survival-lily-saved', '/srv/minecraft')
+    ]
+)
+
+docker_build(
+    'marcstreeter/spigot:survival-sand-local',
+    '../minecraft-survival-sand-saved',
+    dockerfile='../minecraft-survival-sand-saved/Dockerfile',
+    live_update=[
+        sync('../minecraft-survival-sand-saved', '/srv/minecraft')
+    ]
+)
+
+docker_build(
+    'marcstreeter/spigot:survival-wood-local',
+    '../minecraft-survival-wood-saved',
+    dockerfile='../minecraft-survival-wood-saved/Dockerfile',
+    live_update=[
+        sync('../minecraft-survival-wood-saved', '/srv/minecraft')
+    ]
+)
+
+# Deploy using Helm chart with environment variable substitution
 k8s_yaml(helm(
     'manifests',
-    values=['manifests/values-dev.yaml']
+    values=['manifests/values-dev.yaml'],
+    set=[
+        # Global Git configuration
+        'global.git.committerName={}'.format(get_env_var('GIT_COMMITTER_NAME', '')),
+        'global.git.committerEmail={}'.format(get_env_var('GIT_COMMITTER_EMAIL', '')),
+        'global.forwardingSecret={}'.format(get_env_var('VELOCITY_FORWARDING_SECRET', '')),
+        'global.git.token={}'.format(get_env_var('GIT_TOKEN', '')),
+        'global.git.user={}'.format(get_env_var('GIT_USER', '')),
+        # Repository URLs
+        'proxy.git.url={}'.format(get_env_var('GIT_URL_PROXY', '')),
+        'hub.git.url={}'.format(get_env_var('GIT_URL_HUB', '')),
+        'survival.worlds.survival.git.url={}'.format(get_env_var('GIT_URL_SURVIVAL_MAIN', '')),
+        'survival.worlds.survival-berry.git.url={}'.format(get_env_var('GIT_URL_SURVIVAL_BERRY', '')),
+        'survival.worlds.survival-ice.git.url={}'.format(get_env_var('GIT_URL_SURVIVAL_ICE', '')),
+        'survival.worlds.survival-lily.git.url={}'.format(get_env_var('GIT_URL_SURVIVAL_LILY', '')),
+        'survival.worlds.survival-sand.git.url={}'.format(get_env_var('GIT_URL_SURVIVAL_SAND', '')),
+        'survival.worlds.survival-wood.git.url={}'.format(get_env_var('GIT_URL_SURVIVAL_WOOD', ''))
+    ]
 ))
 # helm(
 #     'minecraft-project',
 #     './helm',
-#     namespace=namespace,
+#     namespace=NAMESPACE,
 #     values=['helm/values-dev.yaml'],
 #     set=[
 #         'images.spigot.tag=local',

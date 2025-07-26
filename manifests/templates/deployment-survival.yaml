@@ -5,20 +5,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "minecraft-project.fullname" $ }}-survival-{{ $worldName }}
+  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
   labels:
-    {{- include "minecraft-project.labels" $ | nindent 4 }}
+    {{- include "manifests.labels" $ | nindent 4 }}
     app.kubernetes.io/component: survival-{{ $worldName }}
 spec:
   replicas: {{ $worldConfig.replicaCount }}
   selector:
     matchLabels:
-      {{- include "minecraft-project.selectorLabels" $ | nindent 6 }}
+      {{- include "manifests.selectorLabels" $ | nindent 6 }}
       app.kubernetes.io/component: survival-{{ $worldName }}
   template:
     metadata:
       labels:
-        {{- include "minecraft-project.selectorLabels" $ | nindent 8 }}
+        {{- include "manifests.selectorLabels" $ | nindent 8 }}
         app.kubernetes.io/component: survival-{{ $worldName }}
     spec:
       {{- with $.Values.global.nodeSelector }}
@@ -27,11 +27,22 @@ spec:
       {{- end }}
       containers:
         - name: spigot
-          image: {{ include "minecraft-project.image" $ }}
-          imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          {{- if $.Values.development.enabled }}
+          image: {{ $.Values.images.spigot.repository }}:{{ (index $.Values.images.survival $worldName).tag }}
+          {{- else }}
+          image: {{ $.Values.images.spigot.repository }}:{{ $.Values.images.spigot.tag }}
+          {{- end }}
+          imagePullPolicy: {{ $.Values.images.spigot.pullPolicy }}
           tty: true
           stdin: true
+          env:
+            - name: FORWARDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: velocity-forwarding-secret
+                  key: forwarding.secret
           workingDir: /srv/minecraft
+          {{- if not $.Values.development.disableGitPuller }}
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft/banned-ips.json
@@ -78,19 +89,20 @@ spec:
             - name: worldfiles
               mountPath: /srv/minecraft/world_the_end
               subPath: world_the_end
+          {{- end }}
         - name: refresher
-          image: {{ include "minecraft-project.utilsImage" $ }}
+          image: {{ $.Values.images.utils.repository }}:{{ $.Values.images.utils.tag }}
           workingDir: /srv/utils
           env:
             - name: GIT_COMMITTER_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" $ }}-survival-{{ $worldName }}
+                  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
                   key: git-committer-name
             - name: GIT_COMMITTER_EMAIL
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" $ }}-survival-{{ $worldName }}
+                  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
                   key: git-committer-email
             - name: MINECRAFT_SERVER_PATH
               value: /srv/minecraft
@@ -99,25 +111,26 @@ spec:
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft
+      {{- if not $.Values.development.disableGitPuller }}
       initContainers:
         - name: gitpuller
-          image: {{ include "minecraft-project.utilsImage" $ }}
+          image: {{ $.Values.images.utils.repository }}:{{ $.Values.images.utils.tag }}
           workingDir: /srv/minecraft
           env:
             - name: GITURL
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" $ }}-survival-{{ $worldName }}
+                  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
                   key: git-url
             - name: GITUSER
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" $ }}-survival-{{ $worldName }}
+                  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
                   key: git-user
             - name: GITTOKEN
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" $ }}-survival-{{ $worldName }}
+                  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
                   key: git-token
           command: ["/bin/sh"]
           args:
@@ -128,6 +141,7 @@ spec:
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft
+      {{- end }}
       volumes:
         - name: worldfiles
           emptyDir: {}

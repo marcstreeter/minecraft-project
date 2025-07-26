@@ -5,9 +5,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "minecraft-project.fullname" $ }}-survival-{{ $worldName }}
+  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
   labels:
-    {{- include "minecraft-project.labels" $ | nindent 4 }}
+    {{- include "manifests.labels" $ | nindent 4 }}
     app.kubernetes.io/component: survival-{{ $worldName }}
 spec:
   type: {{ $worldConfig.service.type }}
@@ -16,7 +16,7 @@ spec:
       port: {{ $worldConfig.service.port }}
       targetPort: {{ $worldConfig.service.port }}
   selector:
-    {{- include "minecraft-project.selectorLabels" $ | nindent 4 }}
+    {{- include "manifests.selectorLabels" $ | nindent 4 }}
     app.kubernetes.io/component: survival-{{ $worldName }}
 {{- end }}
 {{- end }}

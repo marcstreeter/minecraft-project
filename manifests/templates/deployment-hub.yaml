@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "minecraft-project.fullname" . }}-hub
+  name: {{ include "manifests.fullname" . }}-hub
   labels:
-    {{- include "minecraft-project.labels" . | nindent 4 }}
+    {{- include "manifests.labels" . | nindent 4 }}
     app.kubernetes.io/component: hub
 spec:
   replicas: {{ .Values.hub.replicaCount }}
   selector:
     matchLabels:
-      {{- include "minecraft-project.selectorLabels" . | nindent 6 }}
+      {{- include "manifests.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: hub
   template:
     metadata:
       labels:
-        {{- include "minecraft-project.selectorLabels" . | nindent 8 }}
+        {{- include "manifests.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: hub
     spec:
       {{- with .Values.global.nodeSelector }}
@@ -24,11 +24,16 @@ spec:
       {{- end }}
       containers:
         - name: spigot
-          image: {{ include "minecraft-project.image" . }}
-          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          {{- if $.Values.development.enabled }}
+          image: {{ .Values.images.spigot.repository }}:{{ .Values.images.hub.tag}}
+          {{- else }}
+          image: {{ .Values.images.spigot.repository }}:{{ .Values.images.spigot.tag }}
+          {{- end }}
+          imagePullPolicy: {{ .Values.images.spigot.pullPolicy | default .Values.global.imagePullPolicy }}
           tty: true
           stdin: true
           workingDir: /srv/minecraft
+          {{- if not .Values.development.disableGitPuller }}
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft/banned-ips.json
@@ -69,19 +74,20 @@ spec:
             - name: worldfiles
               mountPath: /srv/minecraft/world
               subPath: world
+          {{- end }}
         - name: refresher
-          image: {{ include "minecraft-project.utilsImage" . }}
+          image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
           workingDir: /srv/utils
           env:
             - name: GIT_COMMITTER_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" . }}-hub
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-committer-name
             - name: GIT_COMMITTER_EMAIL
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" . }}-hub
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-committer-email
             - name: MINECRAFT_SERVER_PATH
               value: /srv/minecraft
@@ -90,25 +96,26 @@ spec:
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft
+      {{- if not .Values.development.disableGitPuller }}
       initContainers:
         - name: gitpuller
-          image: {{ include "minecraft-project.utilsImage" . }}
+          image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
           workingDir: /srv/minecraft
           env:
             - name: GITURL
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" . }}-hub
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-url
             - name: GITUSER
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" . }}-hub
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-user
             - name: GITTOKEN
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" . }}-hub
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-token
           command: ["/bin/sh"]
           args:
@@ -119,6 +126,7 @@ spec:
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft
+      {{- end }}
       volumes:
         - name: worldfiles
           emptyDir: {}

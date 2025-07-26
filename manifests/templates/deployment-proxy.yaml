@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "minecraft-project.fullname" . }}-proxy
+  name: {{ include "manifests.fullname" . }}-proxy
   labels:
-    {{- include "minecraft-project.labels" . | nindent 4 }}
+    {{- include "manifests.labels" . | nindent 4 }}
     app.kubernetes.io/component: proxy
 spec:
   replicas: {{ .Values.proxy.replicaCount }}
   selector:
     matchLabels:
-      {{- include "minecraft-project.selectorLabels" . | nindent 6 }}
+      {{- include "manifests.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: proxy
   template:
     metadata:
       labels:
-        {{- include "minecraft-project.selectorLabels" . | nindent 8 }}
+        {{- include "manifests.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: proxy
     spec:
       {{- with .Values.global.nodeSelector }}
@@ -24,13 +24,18 @@ spec:
       {{- end }}
       containers:
         - name: spigot-proxy
-          image: {{ include "minecraft-project.proxyImage" . }}
-          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          image: {{ .Values.images.proxy.repository }}:{{ .Values.images.proxy.tag }}
+          imagePullPolicy: {{ .Values.images.proxy.pullPolicy | default .Values.global.imagePullPolicy }}
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
           ports:
             - containerPort: {{ .Values.proxy.service.port }}
           volumeMounts:
+            - name: forwarding-secret
+              mountPath: /app/forwarding.secret
+              subPath: forwarding.secret
+              readOnly: true
+            {{- if not .Values.development.disableGitPuller }}
             - name: proxyfiles
               mountPath: /srv/velocity/banned-ips.json
               subPath: banned-ips.json
@@ -52,25 +57,27 @@ spec:
             - name: proxyfiles
               mountPath: /srv/velocity/server-icon.png
               subPath: server-icon.png
+            {{- end }}
+      {{- if not .Values.development.disableGitPuller }}
       initContainers:
         - name: gitpuller
-          image: {{ include "minecraft-project.utilsImage" . }}
+          image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
           workingDir: /srv/velocity
           env:
             - name: GITURL
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" . }}-proxy
+                  name: {{ include "manifests.fullname" . }}-proxy
                   key: git-url
             - name: GITUSER
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" . }}-proxy
+                  name: {{ include "manifests.fullname" . }}-proxy
                   key: git-user
             - name: GITTOKEN
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "minecraft-project.fullname" . }}-proxy
+                  name: {{ include "manifests.fullname" . }}-proxy
                   key: git-token
           command: ["/bin/sh"]
           args:
@@ -81,7 +88,11 @@ spec:
           volumeMounts:
             - name: proxyfiles
               mountPath: /srv/velocity
+      {{- end }}
       volumes:
         - name: proxyfiles
           emptyDir: {}
+        - name: forwarding-secret
+          secret:
+            secretName: velocity-forwarding-secret
 {{- end }} 

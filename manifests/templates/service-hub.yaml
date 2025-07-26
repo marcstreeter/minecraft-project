@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "minecraft-project.fullname" . }}-hub
+  name: {{ include "manifests.fullname" . }}-hub
   labels:
-    {{- include "minecraft-project.labels" . | nindent 4 }}
+    {{- include "manifests.labels" . | nindent 4 }}
     app.kubernetes.io/component: hub
 spec:
   type: {{ .Values.hub.service.type }}
@@ -13,6 +13,6 @@ spec:
       port: {{ .Values.hub.service.port }}
       targetPort: {{ .Values.hub.service.port }}
   selector:
-    {{- include "minecraft-project.selectorLabels" . | nindent 4 }}
+    {{- include "manifests.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: hub
 {{- end }} 

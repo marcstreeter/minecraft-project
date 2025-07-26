@@ -2,6 +2,9 @@
 kubernetes/configmap.yml
 kubernetes/configmap-*.yml
 
+# Environment variables
+.env
+
 ### OS ###
 .DS_STORE
 
