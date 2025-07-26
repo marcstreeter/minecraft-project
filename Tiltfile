@@ -57,61 +57,26 @@ docker_build(
         sync('../minecraft-hub-saved', '/srv/minecraft')
     ]
 )
+# Define worlds and their configurations
+worlds = [
+    ('survival', 'minecraft-survival-saved'),
+    ('survival-berry', 'minecraft-survival-berry-saved'),
+    ('survival-ice', 'minecraft-survival-ice-saved'),
+    ('survival-lily', 'minecraft-survival-lily-saved'),
+    ('survival-sand', 'minecraft-survival-sand-saved'),
+    ('survival-wood', 'minecraft-survival-wood-saved')
+]
 
-# Build separate images for each survival world with their specific files
-docker_build(
-    'marcstreeter/spigot:survival-local',
-    '../minecraft-survival-saved',
-    dockerfile='../minecraft-survival-saved/Dockerfile',
-    live_update=[
-        sync('../minecraft-survival-saved', '/srv/minecraft')
-    ]
-)
-
-docker_build(
-    'marcstreeter/spigot:survival-berry-local',
-    '../minecraft-survival-berry-saved',
-    dockerfile='../minecraft-survival-berry-saved/Dockerfile',
-    live_update=[
-        sync('../minecraft-survival-berry-saved', '/srv/minecraft')
-    ]
-)
-
-docker_build(
-    'marcstreeter/spigot:survival-ice-local',
-    '../minecraft-survival-ice-saved',
-    dockerfile='../minecraft-survival-ice-saved/Dockerfile',
-    live_update=[
-        sync('../minecraft-survival-ice-saved', '/srv/minecraft')
-    ]
-)
-
-docker_build(
-    'marcstreeter/spigot:survival-lily-local',
-    '../minecraft-survival-lily-saved',
-    dockerfile='../minecraft-survival-lily-saved/Dockerfile',
-    live_update=[
-        sync('../minecraft-survival-lily-saved', '/srv/minecraft')
-    ]
-)
-
-docker_build(
-    'marcstreeter/spigot:survival-sand-local',
-    '../minecraft-survival-sand-saved',
-    dockerfile='../minecraft-survival-sand-saved/Dockerfile',
-    live_update=[
-        sync('../minecraft-survival-sand-saved', '/srv/minecraft')
-    ]
-)
-
-docker_build(
-    'marcstreeter/spigot:survival-wood-local',
-    '../minecraft-survival-wood-saved',
-    dockerfile='../minecraft-survival-wood-saved/Dockerfile',
-    live_update=[
-        sync('../minecraft-survival-wood-saved', '/srv/minecraft')
-    ]
-)
+# Build images for each world
+for world_name, world_dir in worlds:
+    docker_build(
+        'marcstreeter/spigot:{}-local'.format(world_name),
+        '../{}'.format(world_dir),
+        dockerfile='../{}/Dockerfile'.format(world_dir),
+        live_update=[
+            sync('../{}'.format(world_dir), '/srv/minecraft')
+        ]
+    )
 
 # Deploy using Helm chart with environment variable substitution
 k8s_yaml(helm(
@@ -150,24 +115,22 @@ k8s_yaml(helm(
 # )
 
 # Configure port forwards for all services
-# k8s_resource(
-#     'minecraft-project-proxy',
-#     resource_deps=['marcstreeter/proxy:local'],
-#     port_forwards=[
-#         '25577:25577',  # Proxy port
-#         '30565:30565'   # NodePort
-#     ],
-#     labels=['proxy']
-# )
+k8s_resource(
+    'chart-minecraft-project-proxy',
+    port_forwards=[
+        '25577:25577',  # Proxy port
+        '30565:30565'   # NodePort
+    ],
+    labels=['proxy']
+)
 
-# k8s_resource(
-#     'minecraft-project-hub',
-#     resource_deps=['marcstreeter/spigot:local', 'marcstreeter/utils:local'],
-#     port_forwards=[
-#         '25565:25565'  # Hub server port
-#     ],
-#     labels=['hub']
-# )
+k8s_resource(
+    'chart-minecraft-project-hub',
+    port_forwards=[
+        '25565:25565'  # Hub server port
+    ],
+    labels=['hub']
+)
 
 # Configure all survival world servers
 survival_servers = [
