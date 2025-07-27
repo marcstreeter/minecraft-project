@@ -1,0 +1,15 @@
+{{- if .Values.hub.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "manifests.fullname" . }}-hub
+  labels:
+    {{- include "manifests.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hub
+data:
+  git-committer-name: {{ .Values.global.git.committerName | quote }}
+  git-committer-email: {{ .Values.global.git.committerEmail | quote }}
+  git-url: {{ .Values.hub.git.url | quote }}
+  git-token: {{ .Values.global.git.token | quote }}
+  git-user: {{ .Values.global.git.user | quote }}
+{{- end }} 

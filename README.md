@@ -4,6 +4,11 @@ This project accompanies the article series on running Minecraft in Docker and
 writing Minecraft plugins to integrate with IBM Cloud.
 Read the article series at: https://www.ibm.com/developerworks/cloud/library/cl-bluemix-minecraft-docker-trs-1/index.html
 
+## ⚠️ Important: Environment Variables
+
+This project uses environment variables for sensitive configuration (Git tokens, repository URLs, etc.). 
+Before running the project, you must set up your environment variables
+
 ## Requirements
 - [kubectl]
 - [just]
@@ -72,13 +77,11 @@ Can set to a previous saved state in game with `/save` or via api call in `utils
 
 ## Run Locally
 
-You may run this with a local copy of kubernetes, just (port forward)[https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/] your pod with
-
-```bash
-kubectl port-forward <SPIGOT-POD-NAME> 25565:25565
-```
-
-and then from within minecraft point to localhost
+For local development with live updates start the development environment:
+   
+   ```bash
+   just dev
+   ```
 
 # TODO
 - need to stop using latest (increment both version and helm chart reference)

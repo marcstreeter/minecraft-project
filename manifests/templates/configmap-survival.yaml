@@ -1,0 +1,20 @@
+{{- if .Values.survival.enabled }}
+{{- range $worldName, $worldConfig := .Values.survival.worlds }}
+{{- if $worldConfig.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
+  labels:
+    {{- include "manifests.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: survival-{{ $worldName }}
+data:
+  git-committer-name: {{ $.Values.global.git.committerName | quote }}
+  git-committer-email: {{ $.Values.global.git.committerEmail | quote }}
+  git-url: {{ $worldConfig.git.url | quote }}
+  git-token: {{ $.Values.global.git.token | quote }}
+  git-user: {{ $.Values.global.git.user | quote }}
+{{- end }}
+{{- end }}
+{{- end }} 

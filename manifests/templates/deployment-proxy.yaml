@@ -1,0 +1,107 @@
+{{- if .Values.proxy.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "manifests.fullname" $ }}-proxy
+spec:
+  replicas: {{ .Values.proxy.replicaCount }}
+  selector:
+    matchLabels:
+      app: spigot-proxy
+  template:
+    metadata:
+      labels:
+        app: spigot-proxy
+    spec:
+      {{- with .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: spigot-proxy
+          image: {{ .Values.images.proxy.repository }}:{{ .Values.images.proxy.tag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          resources:
+            {{- toYaml .Values.global.resources | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.proxy.service.port }}
+          volumeMounts:
+            - name: forwarding-secret
+              mountPath: /srv/velocity/forwarding.secret
+              subPath: forwarding.secret
+              readOnly: true
+            {{- if not .Values.development.disableGitPuller }}
+            - name: proxyfiles
+              mountPath: /srv/velocity/banned-ips.json
+              subPath: banned-ips.json
+            - name: proxyfiles
+              mountPath: /srv/velocity/modules
+              subPath: modules
+            - name: proxyfiles
+              mountPath: /srv/velocity/config.yml
+              subPath: config.yml
+            - name: proxyfiles
+              mountPath: /srv/velocity/locations.yml
+              subPath: locations.yml
+            - name: proxyfiles
+              mountPath: /srv/velocity/modules.yml
+              subPath: modules.yml
+            - name: proxyfiles
+              mountPath: /srv/velocity/README.md
+              subPath: README.md
+            - name: proxyfiles
+              mountPath: /srv/velocity/server-icon.png
+              subPath: server-icon.png
+            {{- end }}
+      {{- if not .Values.development.disableGitPuller }}
+      initContainers:
+        - name: gitpuller
+          image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
+          workingDir: /srv/velocity
+          env:
+            - name: GITURL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "manifests.fullname" . }}-proxy
+                  key: git-url
+            - name: GITUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "manifests.fullname" . }}-proxy
+                  key: git-user
+            - name: GITTOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "manifests.fullname" . }}-proxy
+                  key: git-token
+          command: ["/bin/sh"]
+          args:
+            [
+              "-c",
+              "if [ -d .git ]; then echo 'already cloned'; else git clone https://$(GITUSER):$(GITTOKEN)@$(GITURL) .; fi",
+            ]
+          volumeMounts:
+            - name: proxyfiles
+              mountPath: /srv/velocity
+      {{- end }}
+      volumes:
+        - name: proxyfiles
+          emptyDir: {}
+        - name: forwarding-secret
+          secret:
+            secretName: velocity-forwarding-secret
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spigot-proxy
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: {{ .Values.proxy.service.port }}
+      targetPort: {{ .Values.proxy.service.port }}
+      nodePort: {{ .Values.proxy.service.nodePort }}
+  selector:
+    app: spigot-proxy
