@@ -25,30 +25,30 @@ spec:
             - containerPort: 25577
           volumeMounts:
             - name: proxyfiles
-              mountPath: /srv/velocity/banned-ips.json
+              mountPath: /srv/waterfall/banned-ips.json
               subPath: banned-ips.json
             - name: proxyfiles
-              mountPath: /srv/velocity/modules
+              mountPath: /srv/waterfall/modules
               subPath: modules
             - name: proxyfiles
-              mountPath: /srv/velocity/config.yml
+              mountPath: /srv/waterfall/config.yml
               subPath: config.yml
             - name: proxyfiles
-              mountPath: /srv/velocity/locations.yml
+              mountPath: /srv/waterfall/locations.yml
               subPath: locations.yml
             - name: proxyfiles
-              mountPath: /srv/velocity/modules.yml
+              mountPath: /srv/waterfall/modules.yml
               subPath: modules.yml
             - name: proxyfiles
-              mountPath: /srv/velocity/README.md
+              mountPath: /srv/waterfall/README.md
               subPath: README.md
             - name: proxyfiles
-              mountPath: /srv/velocity/server-icon.png
+              mountPath: /srv/waterfall/server-icon.png
               subPath: server-icon.png
       initContainers:
         - name: gitpuller
           image: marcstreeter/utils:v11
-          workingDir: /srv/velocity
+          workingDir: /srv/waterfall
           env:
             - name: GITURL
               valueFrom:
@@ -73,7 +73,7 @@ spec:
             ]
           volumeMounts:
             - name: proxyfiles
-              mountPath: /srv/velocity
+              mountPath: /srv/waterfall
       volumes:
         - name: proxyfiles
           emptyDir: {}
