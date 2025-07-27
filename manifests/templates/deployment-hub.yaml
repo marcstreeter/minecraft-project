@@ -4,19 +4,16 @@ kind: Deployment
 metadata:
   name: {{ include "manifests.fullname" . }}-hub
   labels:
-    {{- include "manifests.labels" . | nindent 4 }}
-    app.kubernetes.io/component: hub
+    app: spigot-hub
 spec:
   replicas: {{ .Values.hub.replicaCount }}
   selector:
     matchLabels:
-      {{- include "manifests.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: hub
+      app: spigot-hub
   template:
     metadata:
       labels:
-        {{- include "manifests.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: hub
+        app: spigot-hub
     spec:
       {{- with .Values.global.nodeSelector }}
       nodeSelector:
@@ -32,6 +29,12 @@ spec:
           imagePullPolicy: {{ .Values.images.spigot.pullPolicy | default .Values.global.imagePullPolicy }}
           tty: true
           stdin: true
+          env:
+            - name: FORWARDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: velocity-forwarding-secret
+                  key: forwarding.secret
           workingDir: /srv/minecraft
           {{- if not .Values.development.disableGitPuller }}
           volumeMounts:
@@ -130,4 +133,16 @@ spec:
       volumes:
         - name: worldfiles
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "manifests.fullname" . }}-hub
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: {{ .Values.hub.service.port }}
+  selector:
+    app: spigot-hub
 {{- end }} 

@@ -2,21 +2,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "manifests.fullname" . }}-proxy
-  labels:
-    {{- include "manifests.labels" . | nindent 4 }}
-    app.kubernetes.io/component: proxy
+  name: {{ include "manifests.fullname" $ }}-proxy
 spec:
   replicas: {{ .Values.proxy.replicaCount }}
   selector:
     matchLabels:
-      {{- include "manifests.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: proxy
+      app: spigot-proxy
   template:
     metadata:
       labels:
-        {{- include "manifests.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: proxy
+        app: spigot-proxy
     spec:
       {{- with .Values.global.nodeSelector }}
       nodeSelector:
@@ -25,14 +20,14 @@ spec:
       containers:
         - name: spigot-proxy
           image: {{ .Values.images.proxy.repository }}:{{ .Values.images.proxy.tag }}
-          imagePullPolicy: {{ .Values.images.proxy.pullPolicy | default .Values.global.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
           ports:
             - containerPort: {{ .Values.proxy.service.port }}
           volumeMounts:
             - name: forwarding-secret
-              mountPath: /app/forwarding.secret
+              mountPath: /srv/velocity/forwarding.secret
               subPath: forwarding.secret
               readOnly: true
             {{- if not .Values.development.disableGitPuller }}
@@ -95,4 +90,18 @@ spec:
         - name: forwarding-secret
           secret:
             secretName: velocity-forwarding-secret
-{{- end }} 
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spigot-proxy
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: {{ .Values.proxy.service.port }}
+      targetPort: {{ .Values.proxy.service.port }}
+      nodePort: {{ .Values.proxy.service.nodePort }}
+  selector:
+    app: spigot-proxy

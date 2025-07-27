@@ -118,8 +118,7 @@ k8s_yaml(helm(
 k8s_resource(
     'chart-minecraft-project-proxy',
     port_forwards=[
-        '25577:25577',  # Proxy port
-        '30565:30565'   # NodePort
+        '25577:25577'
     ],
     labels=['proxy']
 )
@@ -127,9 +126,25 @@ k8s_resource(
 k8s_resource(
     'chart-minecraft-project-hub',
     port_forwards=[
-        '25565:25565'  # Hub server port
+        '25565:25565'
     ],
     labels=['hub']
+)
+
+k8s_resource(
+    'chart-minecraft-project-survival-survival-wood',
+    port_forwards=[
+        '25571:25565'
+    ],
+    labels=['worlds']
+)
+
+k8s_resource(
+    'chart-minecraft-project-survival-survival',
+    port_forwards=[
+        '25566:25565'
+    ],
+    labels=['worlds']
 )
 
 # Configure all survival world servers

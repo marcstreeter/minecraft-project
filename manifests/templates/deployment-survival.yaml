@@ -7,19 +7,16 @@ kind: Deployment
 metadata:
   name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
   labels:
-    {{- include "manifests.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: survival-{{ $worldName }}
+    app: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
 spec:
   replicas: {{ $worldConfig.replicaCount }}
   selector:
     matchLabels:
-      {{- include "manifests.selectorLabels" $ | nindent 6 }}
-      app.kubernetes.io/component: survival-{{ $worldName }}
+      app: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
   template:
     metadata:
       labels:
-        {{- include "manifests.selectorLabels" $ | nindent 8 }}
-        app.kubernetes.io/component: survival-{{ $worldName }}
+        app: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
     spec:
       {{- with $.Values.global.nodeSelector }}
       nodeSelector:
@@ -35,13 +32,13 @@ spec:
           imagePullPolicy: {{ $.Values.images.spigot.pullPolicy }}
           tty: true
           stdin: true
+          workingDir: /srv/minecraft
           env:
             - name: FORWARDING_SECRET
               valueFrom:
                 secretKeyRef:
                   name: velocity-forwarding-secret
                   key: forwarding.secret
-          workingDir: /srv/minecraft
           {{- if not $.Values.development.disableGitPuller }}
           volumeMounts:
             - name: worldfiles
@@ -57,6 +54,9 @@ spec:
               mountPath: /srv/minecraft/commands.yml
               subPath: commands.yml
             - name: worldfiles
+              mountPath: /srv/minecraft/config
+              subPath: config
+            - name: worldfiles
               mountPath: /srv/minecraft/help.yml
               subPath: help.yml
             - name: worldfiles
@@ -65,6 +65,9 @@ spec:
             - name: worldfiles
               mountPath: /srv/minecraft/permissions.yml
               subPath: permissions.yml
+            - name: worldfiles
+              mountPath: /srv/minecraft/paper-global.yml
+              subPath: paper-global.yml
             - name: worldfiles
               mountPath: /srv/minecraft/plugins
               subPath: plugins
@@ -145,6 +148,18 @@ spec:
       volumes:
         - name: worldfiles
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: {{ $worldConfig.service.port }}
+  selector:
+    app: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
 {{- end }}
 {{- end }}
 {{- end }} 
