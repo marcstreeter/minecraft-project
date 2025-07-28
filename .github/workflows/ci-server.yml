@@ -25,9 +25,7 @@ jobs:
       - name: Determine version to build
         id: version
         run: |
-          LATEST_VERSION=$(just get-latest-server-version marcstreeter/spigot)
-          NEW_VERSION=$(just increment-version $LATEST_VERSION)
-          echo "Latest version: $LATEST_VERSION"
+          NEW_VERSION=$(just get-next-image-version marcstreeter/spigot)
           echo "New version: $NEW_VERSION"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
       - name: install buildx

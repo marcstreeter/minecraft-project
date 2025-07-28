@@ -103,17 +103,21 @@ check-docker: check-jq check-curl
 get-docker-token *IMAGE:
     @curl --silent "https://auth.docker.io/token?service=registry.docker.io&scope=repository:{{IMAGE}}:pull" | jq -r '.token'
 
-get-latest-server-version *IMAGE:
-    @latest=$(curl --silent --header "Authorization: Bearer $(just get-docker-token {{IMAGE}})" "https://registry-1.docker.io/v2/{{IMAGE}}/tags/list" | jq -r '.tags[] | select(test("^v[0-9]+$"))' | sort -V | tail -1); \
+@get-current-image-version *IMAGE:
+    latest=$(curl --silent --header "Authorization: Bearer $(just get-docker-token {{IMAGE}})" "https://registry-1.docker.io/v2/{{IMAGE}}/tags/list" | jq -r '.tags[] | select(test("^v[0-9]+$"))' | sort -V | tail -1); \
     echo ${latest}
 
-increment-version *version:
+_increment-version *version:
     new_version="v$(echo "{{version}}" | sed 's/v//' | awk '{print $1 + 1}')"; \
     echo $new_version
 
+@get-next-image-version *IMAGE:
+    latest_version=$(just get-current-image-version {{IMAGE}} 2>/dev/null); \
+    next_version=$(just _increment-version $latest_version 2>/dev/null); \
+    echo $next_version
+
 build-server *IMAGE:
-    latest_version=$(just get-latest-server-version {{IMAGE}}); \
-    new_version=$(just increment-version $latest_version); \
+    new_version=$(just get-next-version {{IMAGE}}); \
     docker build -t {{IMAGE}}:$new_version -f server/Dockerfile .; \
     docker tag {{IMAGE}}:$new_version {{IMAGE}}:latest; \
     echo "{{IMAGE}} server build complete - version $new_version"
