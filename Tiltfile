@@ -1,6 +1,7 @@
 # Tiltfile for Minecraft Project with Helm
 allow_k8s_contexts('docker-desktop')
 load('ext://dotenv', 'dotenv')
+secret_settings(disable_scrub=True)
 
 # CONSTANTS
 DOTENV = dotenv() or {}

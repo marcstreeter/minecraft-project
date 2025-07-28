@@ -36,8 +36,8 @@ spec:
                   name: velocity-forwarding-secret
                   key: forwarding.secret
           workingDir: /srv/minecraft
-          {{- if not .Values.development.disableGitPuller }}
           volumeMounts:
+            {{- if not .Values.development.disableGitPuller }}
             - name: worldfiles
               mountPath: /srv/minecraft/banned-ips.json
               subPath: banned-ips.json
@@ -77,7 +77,9 @@ spec:
             - name: worldfiles
               mountPath: /srv/minecraft/world
               subPath: world
-          {{- end }}
+            {{- end }}
+            - name: config-output
+              mountPath: /srv/minecraft/config
         - name: refresher
           image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
           workingDir: /srv/utils
@@ -99,8 +101,32 @@ spec:
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft
-      {{- if not .Values.development.disableGitPuller }}
       initContainers:
+        - name: config-setup
+          image: busybox
+          env:
+            - name: FORWARDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: velocity-forwarding-secret
+                  key: forwarding.secret
+          volumeMounts:
+            - name: config-template
+              mountPath: /template
+              readOnly: true
+            - name: config-output
+              mountPath: /output
+          command:
+            - sh
+            - -c
+            - |
+              echo "Processing paper-global.yml..."
+              cp /template/paper-global.yml /output/paper-global.yml
+              sed -i "s/REPLACE_SECRET_HERE/$FORWARDING_SECRET/g" /output/paper-global.yml
+              echo "Config processed. Secret replaced with: $FORWARDING_SECRET"
+              echo "Final config:"
+              cat /output/paper-global.yml
+        {{- if not $.Values.development.disableGitPuller }}
         - name: gitpuller
           image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
           workingDir: /srv/minecraft
@@ -129,9 +155,14 @@ spec:
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft
-      {{- end }}
+        {{- end }}
       volumes:
         - name: worldfiles
+          emptyDir: {}
+        - name:  config-template
+          configMap:
+            name: general-survival-config
+        - name: config-output
           emptyDir: {}
 ---
 apiVersion: v1
