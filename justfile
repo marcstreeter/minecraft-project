@@ -1,7 +1,7 @@
 # Variables
 KUBE_CONTEXT := "local"
 NAMESPACE := "yicraft"
-HIGH_POWER_NODES := "k3sruth k3sluke k3sjane k3snena k3sjose server-mini-b server-mini-c server-mini-d"
+HIGH_POWER_NODES := "k3sruth k3sluke k3sjane k3snena k3sjose server-mini-b server-mini-c server-mini-d server-mini-e"
 
 _check-tilt:
     which tilt > /dev/null || (echo "tilt is not installed, install from https://docs.tilt.dev/install.html"; exit 1)
@@ -16,7 +16,8 @@ check-curl:
 check-jq:
     which jq > /dev/null || (echo "jq is not installed, use 'brew install jq' to proceed."; exit 1)
 
-with-ctx context="{{KUBE_CONTEXT}}":
+# Use default context or override
+with-ctx context=KUBE_CONTEXT:
     kubectl config use-context {{context}}
 
 with-ns: with-ctx
@@ -34,10 +35,51 @@ label: with-ctx
     done
 
 up: with-ns
-    kubectl -n {{NAMESPACE}} apply -f kubernetes/
+    # Load .env file and apply with Helm
+    export $(grep -v '^#' .env | grep -v '^$' | xargs) && \
+    helm template minecraft-project ./manifests --namespace {{NAMESPACE}} -f ./manifests/values-prod.yaml \
+        --set global.git.committerName="${GIT_COMMITTER_NAME:-}" \
+        --set global.git.committerEmail="${GIT_COMMITTER_EMAIL:-}" \
+        --set global.git.token="${GIT_TOKEN:-}" \
+        --set global.git.user="${GIT_USER:-}" \
+        --set global.forwardingSecret="${VELOCITY_FORWARDING_SECRET:-}" \
+        --set proxy.git.url="${GIT_URL_PROXY:-}" \
+        --set hub.git.url="${GIT_URL_HUB:-}" \
+        --set survival.worlds.survival.git.url="${GIT_URL_SURVIVAL:-}" \
+        --set survival.worlds.survival-berry.git.url="${GIT_URL_SURVIVAL_BERRY:-}" \
+        --set survival.worlds.survival-ice.git.url="${GIT_URL_SURVIVAL_ICE:-}" \
+        --set survival.worlds.survival-lily.git.url="${GIT_URL_SURVIVAL_LILY:-}" \
+        --set survival.worlds.survival-sand.git.url="${GIT_URL_SURVIVAL_SAND:-}" \
+        --set survival.worlds.survival-wood.git.url="${GIT_URL_SURVIVAL_WOOD:-}" | kubectl apply -f -
 
 down: with-ns
-    kubectl -n {{NAMESPACE}} delete -f kubernetes/
+    # Load .env file and delete with Helm
+    export $(grep -v '^#' .env | grep -v '^$' | xargs) && \
+    helm template minecraft-project ./manifests --namespace {{NAMESPACE}} -f ./manifests/values-prod.yaml \
+        --set global.git.committerName="${GIT_COMMITTER_NAME:-}" \
+        --set global.git.committerEmail="${GIT_COMMITTER_EMAIL:-}" \
+        --set global.git.token="${GIT_TOKEN:-}" \
+        --set global.git.user="${GIT_USER:-}" \
+        --set global.forwardingSecret="${VELOCITY_FORWARDING_SECRET:-}" \
+        --set proxy.git.url="${GIT_URL_PROXY:-}" \
+        --set hub.git.url="${GIT_URL_HUB:-}" \
+        --set survival.worlds.survival.git.url="${GIT_URL_SURVIVAL:-}" \
+        --set survival.worlds.survival-berry.git.url="${GIT_URL_SURVIVAL_BERRY:-}" \
+        --set survival.worlds.survival-ice.git.url="${GIT_URL_SURVIVAL_ICE:-}" \
+        --set survival.worlds.survival-lily.git.url="${GIT_URL_SURVIVAL_LILY:-}" \
+        --set survival.worlds.survival-sand.git.url="${GIT_URL_SURVIVAL_SAND:-}" \
+        --set survival.worlds.survival-wood.git.url="${GIT_URL_SURVIVAL_WOOD:-}" | kubectl delete -f -
+
+# # Alternative: Use envsubst for environment variable substitution
+# up-env: with-ns
+#     export $(grep -v '^#' .env | grep -v '^$' | xargs) && \
+#     envsubst < ./manifests/values-env.yaml | \
+#     helm template minecraft-project ./manifests --namespace {{NAMESPACE}} -f - | kubectl apply -f -
+
+# down-env: with-ns
+#     export $(grep -v '^#' .env | grep -v '^$' | xargs) && \
+#     envsubst < ./manifests/values-env.yaml | \
+#     helm template minecraft-project ./manifests --namespace {{NAMESPACE}} -f - | kubectl delete -f -
 
 check-server: check-jq check-curl
     curl -s https://api.papermc.io/v2/projects/paper/ \

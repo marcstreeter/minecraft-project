@@ -53,8 +53,8 @@ spec:
               mountPath: /srv/velocity/server-icon.png
               subPath: server-icon.png
             {{- end }}
-      {{- if not .Values.development.disableGitPuller }}
       initContainers:
+        {{- if not .Values.development.disableGitPuller }}
         - name: gitpuller
           image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
           workingDir: /srv/velocity
@@ -83,14 +83,13 @@ spec:
           volumeMounts:
             - name: proxyfiles
               mountPath: /srv/velocity
-      {{- end }}
+        {{- end }}
       volumes:
         - name: proxyfiles
           emptyDir: {}
         - name: forwarding-secret
           secret:
             secretName: velocity-forwarding-secret
-{{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -105,3 +104,4 @@ spec:
       nodePort: {{ .Values.proxy.service.nodePort }}
   selector:
     app: spigot-proxy
+{{- end }}

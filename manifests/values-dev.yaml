@@ -39,15 +39,6 @@ development:
   enabled: true
   localImages: true
   disableGitPuller: true  # Disable gitpuller init containers in dev mode
-  portForwards:
-    proxy: 25577
-    hub: 25565
-    survival: 25566
-    berry: 25567
-    ice: 25568
-    lily: 25569
-    sand: 25570
-    wood: 25571
 
 survival:
   worlds:
