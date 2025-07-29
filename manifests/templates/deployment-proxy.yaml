@@ -23,9 +23,9 @@ spec:
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: SERVER_MIN_MEMORY
-              value: {{ .Values.proxy.resources.requests.memory-mb | quote }}
+              value: {{ .Values.proxy.resources.requests.memorymb | quote }}
             - name: SERVER_MAX_MEMORY
-              value: {{ .Values.proxy.resources.limits.memory-mb | quote }}
+              value: {{ .Values.proxy.resources.limits.memorymb | quote }}
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
           ports:

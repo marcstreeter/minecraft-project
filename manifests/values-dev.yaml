@@ -6,20 +6,15 @@ images:
   spigot:
     repository: marcstreeter/spigot
     tag: "local"
-    pullPolicy: IfNotPresent
   hub:
     repository: marcstreeter/spigot
     tag: "hub-local"
-    pullPolicy: IfNotPresent
   proxy:
     repository: marcstreeter/proxy
     tag: "local"
-    pullPolicy: IfNotPresent
   utils:
     repository: marcstreeter/utils
     tag: "local"
-    pullPolicy: IfNotPresent
-  # World-specific images for development
   survival:
     survival:
       tag: "survival-local"
@@ -44,11 +39,11 @@ proxy:
   resources:
     limits:
       # given M > Mi we should be fine with these being the same (for overhead of the pod)
-      memory-mb: "1024M"
+      memorymb: "1024M"
       memory: "1024Mi"
       cpu: "1"
     requests:
-      memory-mb: "512M"
+      memorymb: "512M"
       memory: "512Mi"
       cpu: "500m"
 
@@ -71,9 +66,11 @@ survival:
 global:
   resources:
     limits:
+      memorymb: "1024M"
       memory: "1024Mi"
-      cpu: "250m"
+      cpu: "500m"
     requests:
+      memorymb: "512M"
       memory: "512Mi"
       cpu: "100m"
 

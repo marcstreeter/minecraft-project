@@ -4,27 +4,23 @@
 # Production image tags
 images:
   spigot:
-    repository: marcstreeter/spigot
-    tag: "v28"
     pullPolicy: Always
   proxy:
-    repository: marcstreeter/proxy
-    tag: "v10"
     pullPolicy: Always
   utils:
-    repository: marcstreeter/utils
-    tag: "v11"
     pullPolicy: Always
 
 # Production resource limits
 global:
   resources:
     limits:
+      memorymb: "4096M"
       memory: "4096Mi"
-      cpu: "1000m"
+      cpu: "1"
     requests:
+      memorymb: "2048M"
       memory: "2048Mi"
-      cpu: "500m"
+      cpu: "1"
 
 # Production node selector
 global:

@@ -8,13 +8,6 @@ global:
   imagePullPolicy: IfNotPresent
   nodeSelector:
     pow: hi
-  resources:
-    limits:
-      memory: "2048Mi"
-      cpu: "500m"
-    requests:
-      memory: "1024Mi"
-      cpu: "250m"
   git:
     committerName: "${GIT_COMMITTER_NAME}"
     committerEmail: "${GIT_COMMITTER_EMAIL}"
@@ -50,12 +43,12 @@ proxy:
   resources:
     limits:
       # given M > Mi we should be fine with these being the same (for overhead of the pod)
-      memory-mb: "2048M"
-      memory: "2048Mi"
+      memorymb: "4096M"
+      memory: "4096Mi"
       cpu: "1"
     requests:
-      memory-mb: "1024M"
-      memory: "1024Mi"
+      memorymb: "2048M"
+      memory: "2048Mi"
       cpu: "500m"
 
 # Hub server configuration
