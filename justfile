@@ -70,17 +70,6 @@ down: with-ns
         --set survival.worlds.survival-sand.git.url="${GIT_URL_SURVIVAL_SAND:-}" \
         --set survival.worlds.survival-wood.git.url="${GIT_URL_SURVIVAL_WOOD:-}" | kubectl delete -f -
 
-# # Alternative: Use envsubst for environment variable substitution
-# up-env: with-ns
-#     export $(grep -v '^#' .env | grep -v '^$' | xargs) && \
-#     envsubst < ./manifests/values-env.yaml | \
-#     helm template minecraft-project ./manifests --namespace {{NAMESPACE}} -f - | kubectl apply -f -
-
-# down-env: with-ns
-#     export $(grep -v '^#' .env | grep -v '^$' | xargs) && \
-#     envsubst < ./manifests/values-env.yaml | \
-#     helm template minecraft-project ./manifests --namespace {{NAMESPACE}} -f - | kubectl delete -f -
-
 check-server: check-jq check-curl
     curl -s https://api.papermc.io/v2/projects/paper/ \
         | jq '.versions | .[-3:]' \
