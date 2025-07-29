@@ -30,7 +30,7 @@ images:
     pullPolicy: IfNotPresent
   proxy:
     repository: marcstreeter/proxy
-    tag: "v10"
+    tag: "v19"
     pullPolicy: IfNotPresent
   utils:
     repository: marcstreeter/utils
