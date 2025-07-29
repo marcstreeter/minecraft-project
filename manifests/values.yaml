@@ -47,6 +47,16 @@ proxy:
     nodePort: 30565
   git:
     url: "${GIT_URL_PROXY}"
+  resources:
+    limits:
+      # given M > Mi we should be fine with these being the same (for overhead of the pod)
+      memory-mb: "2048M"
+      memory: "2048Mi"
+      cpu: "1"
+    requests:
+      memory-mb: "1024M"
+      memory: "1024Mi"
+      cpu: "500m"
 
 # Hub server configuration
 hub:

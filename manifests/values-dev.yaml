@@ -40,6 +40,18 @@ development:
   localImages: true
   disableGitPuller: true  # Disable gitpuller init containers in dev mode
 
+proxy:
+  resources:
+    limits:
+      # given M > Mi we should be fine with these being the same (for overhead of the pod)
+      memory-mb: "1024M"
+      memory: "1024Mi"
+      cpu: "1"
+    requests:
+      memory-mb: "512M"
+      memory: "512Mi"
+      cpu: "500m"
+
 survival:
   worlds:
     survival:
