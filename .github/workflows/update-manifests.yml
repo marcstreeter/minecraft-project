@@ -23,7 +23,9 @@ jobs:
       
       - name: Install Just
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+          for i in {1..5}; do
+              curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin && break || sleep 5
+          done
       
       - name: Get latest versions and update all manifests
         run: |
