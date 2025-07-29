@@ -82,6 +82,7 @@ for world_name, world_dir in worlds:
 # Deploy using Helm chart with environment variable substitution
 k8s_yaml(helm(
     'manifests',
+    name='minecraft-project',
     values=['manifests/values-dev.yaml'],
     set=[
         # Global Git configuration
@@ -117,7 +118,7 @@ k8s_yaml(helm(
 
 # Configure port forwards for all services
 k8s_resource(
-    'chart-minecraft-project-proxy',
+    'minecraft-project-proxy',
     port_forwards=[
         '25577:25577'
     ],
@@ -125,7 +126,7 @@ k8s_resource(
 )
 
 k8s_resource(
-    'chart-minecraft-project-hub',
+    'minecraft-project-hub',
     port_forwards=[
         '25565:25565'
     ],
@@ -133,7 +134,7 @@ k8s_resource(
 )
 
 k8s_resource(
-    'chart-minecraft-project-survival-survival-wood',
+    'minecraft-project-survival-survival-wood',
     port_forwards=[
         '25571:25565'
     ],
@@ -141,7 +142,7 @@ k8s_resource(
 )
 
 k8s_resource(
-    'chart-minecraft-project-survival-survival',
+    'minecraft-project-survival-survival',
     port_forwards=[
         '25566:25565'
     ],
