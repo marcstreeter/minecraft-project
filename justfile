@@ -1,8 +1,8 @@
 # Variables
 KUBE_CONTEXT := "local"
 NAMESPACE := "yicraft"
-HIGH_POWER_NODES := "k3sruth k3sluke k3sjane k3snena k3sjose server-mini-b server-mini-c server-mini-d server-mini-e"
-
+LONG_LIFE_NODES := "server-mini-b server-mini-c server-mini-d server-mini-e"
+HIGH_POWER_NODES := "k3sruth k3sluke k3sjane" # THESE ARE MISSING k3snena k3sjose
 # Helper recipes
 
 _check-tilt:
@@ -37,13 +37,19 @@ _with-ns: _with-ctx
     fi
 
 # appends required labels to target nodes
-label: _with-ctx
-    for node in {{HIGH_POWER_NODES}}; do \
+_label: _with-ctx
+    for node in {{LONG_LIFE_NODES}}; do \
         kubectl label nodes "${node}" pow=hi; \
     done
 
+# removes labels from target nodes
+_unlabel: _with-ctx
+    for node in {{LONG_LIFE_NODES}}; do \
+        kubectl label nodes "${node}" pow-; \
+    done
+
 # brings up your minecraft cluster (opposite of down)
-up: _check-helm _with-ns
+up: _check-helm _with-ns _label
     # Load .env file and apply with Helm
     export $(grep -v '^#' .env | grep -v '^$' | xargs) && \
     helm template minecraft-project ./manifests --namespace {{NAMESPACE}} -f ./manifests/values-prod.yaml \
@@ -62,7 +68,7 @@ up: _check-helm _with-ns
         --set survival.worlds.survival-wood.git.url="${GIT_URL_SURVIVAL_WOOD:-}" | kubectl apply -f -
 
 # tears down your minecraft cluster (opposite of up)
-down: _with-ns
+down: _with-ns _unlabel
     # Load .env file and delete with Helm
     export $(grep -v '^#' .env | grep -v '^$' | xargs) && \
     helm template minecraft-project ./manifests --namespace {{NAMESPACE}} -f ./manifests/values-prod.yaml \
