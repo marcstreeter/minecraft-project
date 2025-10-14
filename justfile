@@ -11,10 +11,10 @@ _check-tilt:
 _check-helm:
     which helm > /dev/null || (echo "helm is not installed, install from https://helm.sh/docs/intro/install/"; exit 1)
 
-_check-curl:
+@_check-curl:
     which curl > /dev/null || (echo "curl is not installed, in what world do you live in?"; exit 1)
 
-_check-jq:
+@_check-jq:
     which jq > /dev/null || (echo "jq is not installed, use 'brew install jq' to proceed."; exit 1)
 
 _get-docker-token *IMAGE:
@@ -108,12 +108,12 @@ check-docker: _check-jq _check-curl
     | jq -r '.results[] | select(.name | test("^[0-9]+(\\.[0-9]+(\\.[0-9]+)?)?(_[0-9]+)?-jdk(-[a-z]+)?$")) | .name' \
     | head -10
 
-# helper for github action: determines current version for target IMAGE
+# helper for github action: determines current version for target IMAGE (e.g `just get-current-image-version marcstreeter/utils`)
 @get-current-image-version *IMAGE: _check-curl _check-jq
     latest=$(curl --silent --header "Authorization: Bearer $(just _get-docker-token {{IMAGE}})" "https://registry-1.docker.io/v2/{{IMAGE}}/tags/list" | jq -r '.tags[] | select(test("^v[0-9]+$"))' | sort -V | tail -1); \
     echo ${latest}
 
-# helper for github action: determines next logical version for target IMAGE
+# helper for github action: determines next logical version for target IMAGE (e.g `just get-next-image-version marcstreeter/spigot`)
 @get-next-image-version *IMAGE:
     latest_version=$(just get-current-image-version {{IMAGE}} 2>/dev/null); \
     next_version=$(just _increment-version $latest_version 2>/dev/null); \
