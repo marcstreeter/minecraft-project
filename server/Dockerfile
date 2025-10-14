@@ -9,4 +9,4 @@ RUN apt-get update \
   && apt-get -y remove wget \
   && apt-get -y autoremove --purge
 EXPOSE 25565
-CMD ["java","-Xms512M","-Xmx2048M","-Dcom.mojang.eula.agree=true","-Dfile.encoding=UTF-8","-jar","paper.jar","nogui"]
+CMD ["java","-Xms1024M","-Xmx2048M","-Dcom.mojang.eula.agree=true","-Dfile.encoding=UTF-8","-jar","paper.jar","nogui"]
