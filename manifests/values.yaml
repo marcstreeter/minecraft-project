@@ -19,7 +19,7 @@ global:
 images:
   spigot:
     repository: marcstreeter/spigot
-    tag: "v29"
+    tag: "v30"
     pullPolicy: IfNotPresent
   proxy:
     repository: marcstreeter/proxy
