@@ -23,7 +23,7 @@ images:
     pullPolicy: IfNotPresent
   proxy:
     repository: marcstreeter/proxy
-    tag: "v21"
+    tag: "v22"
     pullPolicy: IfNotPresent
   utils:
     repository: marcstreeter/utils
