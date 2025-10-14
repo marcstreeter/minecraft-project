@@ -27,7 +27,7 @@ images:
     pullPolicy: IfNotPresent
   utils:
     repository: marcstreeter/utils
-    tag: "v12"
+    tag: "v13"
     pullPolicy: IfNotPresent
 
 # Proxy server configuration
