@@ -19,15 +19,15 @@ global:
 images:
   spigot:
     repository: marcstreeter/spigot
-    tag: "v29"
+    tag: "v30"
     pullPolicy: IfNotPresent
   proxy:
     repository: marcstreeter/proxy
-    tag: "v21"
+    tag: "v22"
     pullPolicy: IfNotPresent
   utils:
     repository: marcstreeter/utils
-    tag: "v12"
+    tag: "v13"
     pullPolicy: IfNotPresent
 
 # Proxy server configuration
