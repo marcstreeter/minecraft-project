@@ -1,0 +1,79 @@
+# Development values for minecraft-project
+# This file overrides values.yaml for local development
+
+# Use local images for development
+images:
+  spigot:
+    repository: marcstreeter/spigot
+    tag: "local"
+  hub:
+    repository: marcstreeter/spigot
+    tag: "hub-local"
+  proxy:
+    repository: marcstreeter/proxy
+    tag: "local"
+  utils:
+    repository: marcstreeter/utils
+    tag: "local"
+  survival:
+    survival:
+      tag: "survival-local"
+    survival-berry:
+      tag: "survival-berry-local"
+    survival-ice:
+      tag: "survival-ice-local"
+    survival-lily:
+      tag: "survival-lily-local"
+    survival-sand:
+      tag: "survival-sand-local"
+    survival-wood:
+      tag: "survival-wood-local"
+
+# Development configuration
+development:
+  enabled: true
+  localImages: true
+  disableGitPuller: true  # Disable gitpuller init containers in dev mode
+
+proxy:
+  resources:
+    limits:
+      # given M > Mi we should be fine with these being the same (for overhead of the pod)
+      memorymb: "1024M"
+      memory: "1024Mi"
+      cpu: "1"
+    requests:
+      memorymb: "512M"
+      memory: "512Mi"
+      cpu: "500m"
+
+survival:
+  worlds:
+    survival:
+      enabled: true
+    survival-berry:
+      enabled: true
+    survival-ice:
+      enabled: true
+    survival-lily:
+      enabled: true
+    survival-sand:
+      enabled: true
+    survival-wood:
+      enabled: true
+
+# Reduce resource limits for local development
+global:
+  resources:
+    limits:
+      memorymb: "1024M"
+      memory: "1024Mi"
+      cpu: "500m"
+    requests:
+      memorymb: "512M"
+      memory: "512Mi"
+      cpu: "100m"
+
+# Disable node selector for local development
+global:
+  nodeSelector: null

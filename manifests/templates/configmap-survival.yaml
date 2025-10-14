@@ -1,0 +1,57 @@
+{{- if .Values.survival.enabled }}
+{{- range $worldName, $worldConfig := .Values.survival.worlds }}
+{{- if $worldConfig.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "manifests.fullname" $ }}-survival-{{ $worldName }}
+  labels:
+    {{- include "manifests.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: survival-{{ $worldName }}
+data:
+  git-committer-name: {{ $.Values.global.git.committerName | quote }}
+  git-committer-email: {{ $.Values.global.git.committerEmail | quote }}
+  git-url: {{ $worldConfig.git.url | quote }}
+  git-token: {{ $.Values.global.git.token | quote }}
+  git-user: {{ $.Values.global.git.user | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: general-survival-config
+data:
+  paper-global.yml: |
+    proxies:
+      velocity:
+        enabled: true
+        online-mode: false
+        secret: "REPLACE_SECRET_HERE"
+
+    chunk-loading:
+      min-load-radius: 2
+      max-concurrent-sends: 2
+      autoconfig-send-distance: true
+
+    timings:
+      enabled: false
+
+    # timings:
+    # this will send performance data to aikar (paper creators) central server whenever you run /timings paste
+    #   enabled: true
+    #   verbose: true
+    #   url: https://timings.aikar.co/
+    #   server-name-privacy: true # this anonymizes the server name
+    #   hidden-config-entries:
+    # this will hide the config entries from the performance data
+    #   - database
+    #   - settings.bungeecord-addresses
+    #   - settings.velocity-support.secret
+
+    misc:
+      max-joins-per-tick: 3
+      track-plugin-scoreboards: false
+      fix-entity-position-desync: true

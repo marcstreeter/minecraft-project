@@ -1,27 +1,43 @@
----
+{{- if .Values.hub.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spigot-survival
+  name: {{ include "manifests.fullname" . }}-hub
+  labels:
+    app: spigot-hub
 spec:
-  replicas: 1
+  replicas: {{ .Values.hub.replicaCount }}
   selector:
     matchLabels:
-      app: spigot-survival
+      app: spigot-hub
   template:
     metadata:
       labels:
-        app: spigot-survival
+        app: spigot-hub
     spec:
+      {{- with .Values.global.nodeSelector }}
       nodeSelector:
-        pow: hi
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: spigot
-          image: marcstreeter/spigot:v28
+          {{- if $.Values.development.enabled }}
+          image: {{ .Values.images.spigot.repository }}:{{ .Values.images.hub.tag}}
+          {{- else }}
+          image: {{ .Values.images.spigot.repository }}:{{ .Values.images.spigot.tag }}
+          {{- end }}
+          imagePullPolicy: {{ .Values.images.spigot.pullPolicy | default .Values.global.imagePullPolicy }}
           tty: true
           stdin: true
+          env:
+            - name: FORWARDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: velocity-forwarding-secret
+                  key: forwarding.secret
           workingDir: /srv/minecraft
           volumeMounts:
+            {{- if not .Values.development.disableGitPuller }}
             - name: worldfiles
               mountPath: /srv/minecraft/banned-ips.json
               subPath: banned-ips.json
@@ -61,25 +77,22 @@ spec:
             - name: worldfiles
               mountPath: /srv/minecraft/world
               subPath: world
-            - name: worldfiles
-              mountPath: /srv/minecraft/world_nether
-              subPath: world_nether
-            - name: worldfiles
-              mountPath: /srv/minecraft/world_the_end
-              subPath: world_the_end
+            {{- end }}
+            - name: config-output
+              mountPath: /srv/minecraft/config
         - name: refresher
-          image: marcstreeter/utils:v11
+          image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
           workingDir: /srv/utils
           env:
             - name: GIT_COMMITTER_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: spigot-survival
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-committer-name
             - name: GIT_COMMITTER_EMAIL
               valueFrom:
                 configMapKeyRef:
-                  name: spigot-survival
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-committer-email
             - name: MINECRAFT_SERVER_PATH
               value: /srv/minecraft
@@ -89,24 +102,49 @@ spec:
             - name: worldfiles
               mountPath: /srv/minecraft
       initContainers:
+        - name: config-setup
+          image: busybox
+          env:
+            - name: FORWARDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: velocity-forwarding-secret
+                  key: forwarding.secret
+          volumeMounts:
+            - name: config-template
+              mountPath: /template
+              readOnly: true
+            - name: config-output
+              mountPath: /output
+          command:
+            - sh
+            - -c
+            - |
+              echo "Processing paper-global.yml..."
+              cp /template/paper-global.yml /output/paper-global.yml
+              sed -i "s/REPLACE_SECRET_HERE/$FORWARDING_SECRET/g" /output/paper-global.yml
+              echo "Config processed. Secret replaced with: $FORWARDING_SECRET"
+              echo "Final config:"
+              cat /output/paper-global.yml
+        {{- if not $.Values.development.disableGitPuller }}
         - name: gitpuller
-          image: marcstreeter/utils:v11
+          image: {{ .Values.images.utils.repository }}:{{ .Values.images.utils.tag }}
           workingDir: /srv/minecraft
           env:
             - name: GITURL
               valueFrom:
                 configMapKeyRef:
-                  name: spigot-survival
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-url
             - name: GITUSER
               valueFrom:
                 configMapKeyRef:
-                  name: spigot-survival
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-user
             - name: GITTOKEN
               valueFrom:
                 configMapKeyRef:
-                  name: spigot-survival
+                  name: {{ include "manifests.fullname" . }}-hub
                   key: git-token
           command: ["/bin/sh"]
           args:
@@ -117,18 +155,25 @@ spec:
           volumeMounts:
             - name: worldfiles
               mountPath: /srv/minecraft
+        {{- end }}
       volumes:
         - name: worldfiles
+          emptyDir: {}
+        - name:  config-template
+          configMap:
+            name: general-survival-config
+        - name: config-output
           emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: spigot-survival
+  name: {{ include "manifests.fullname" . }}-hub
 spec:
   type: NodePort
   ports:
     - protocol: TCP
-      port: 25565
+      port: {{ .Values.hub.service.port }}
   selector:
-    app: spigot-survival
+    app: spigot-hub
+{{- end }} 

@@ -1,0 +1,33 @@
+# Production values for minecraft-project
+# This file overrides values.yaml for production deployment
+
+# Production image tags
+images:
+  spigot:
+    pullPolicy: Always
+  proxy:
+    pullPolicy: Always
+  utils:
+    pullPolicy: Always
+
+# Production resource limits
+global:
+  resources:
+    limits:
+      memorymb: "4096M"
+      memory: "4096Mi"
+      cpu: "1"
+    requests:
+      memorymb: "2048M"
+      memory: "2048Mi"
+      cpu: "1"
+
+# Production node selector
+global:
+  nodeSelector:
+    pow: hi
+
+# Development configuration disabled
+development:
+  enabled: false
+  localImages: false 

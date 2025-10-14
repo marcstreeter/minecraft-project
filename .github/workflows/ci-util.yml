@@ -1,4 +1,4 @@
-name: build our image
+name: Build Utils Image
 
 on:
   push:
@@ -9,33 +9,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.new_version }}
     steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: checkout code
-        uses: actions/checkout@v2
+      
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Install Just
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+          for i in {1..5}; do
+            curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin && break || sleep 5
+          done
+      
       - name: Determine version to build
         id: version
         run: |
-          LATEST_VERSION=$(just get-latest-server-version marcstreeter/utils)
-          NEW_VERSION=$(just increment-version $LATEST_VERSION)
-          echo "Latest version: $LATEST_VERSION"
+          NEW_VERSION=$(just get-next-image-version marcstreeter/utils)
           echo "New version: $NEW_VERSION"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-      - name: install buildx
+      
+      - name: Install buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
           version: latest
-      - name: build the utils image
+      
+      - name: Build the utils image
         working-directory: ./util
         run: |
           docker buildx build \
@@ -43,3 +50,22 @@ jobs:
             --tag marcstreeter/utils:latest \
             --tag marcstreeter/utils:${{ steps.version.outputs.new_version }} \
             --platform linux/amd64,linux/arm/v7,linux/arm64 .
+  
+  trigger-update:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Trigger version update workflow
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: update-image-version
+          client-payload: |-
+            {
+              "image_type": "utils",
+              "version": "${{ needs.build.outputs.version }}",
+              "source_repo": "${{ github.repository }}",
+              "commit_sha": "${{ github.sha }}",
+              "run_id": "${{ github.run_id }}",
+              "triggered_by": "${{ github.actor }}"
+            }

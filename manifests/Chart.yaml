@@ -1,0 +1,4 @@
+apiVersion: v2
+name: minecraft-project
+description: Minecraft server system with proxy, hub, and multiple survival worlds
+version: 0.1.0 
