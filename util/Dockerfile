@@ -1,5 +1,5 @@
 # to check for latest version run "just check-docker"
-FROM python:3.9.23-bullseye
+FROM python:3.9.24-bookworm
 RUN apt-get install git
 COPY requirements.txt /srv/requirements.txt
 RUN pip install -r /srv/requirements.txt
