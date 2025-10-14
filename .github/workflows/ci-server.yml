@@ -1,4 +1,4 @@
-name: build our image
+name: Build Server Image
 
 on:
   push:
@@ -9,34 +9,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.new_version }}
     steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: checkout code
-        uses: actions/checkout@v2
+      
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
+      
       - name: Install Just
         run: |
           for i in {1..5}; do
               curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin && break || sleep 5
           done
+      
       - name: Determine version to build
         id: version
         run: |
           NEW_VERSION=$(just get-next-image-version marcstreeter/spigot)
           echo "New version: $NEW_VERSION"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-      - name: install buildx
+      
+      - name: Install buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
           version: latest
-      - name: build the server image
+      
+      - name: Build the server image
         working-directory: ./server
         run: |
           docker buildx build \
@@ -44,3 +50,22 @@ jobs:
             --tag marcstreeter/spigot:latest \
             --tag marcstreeter/spigot:${{ steps.version.outputs.new_version }} \
             --platform linux/amd64,linux/arm64 .
+  
+  trigger-update:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Trigger version update workflow
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: update-image-version
+          client-payload: |-
+            {
+              "image_type": "spigot",
+              "version": "${{ needs.build.outputs.version }}",
+              "source_repo": "${{ github.repository }}",
+              "commit_sha": "${{ github.sha }}",
+              "run_id": "${{ github.run_id }}",
+              "triggered_by": "${{ github.actor }}"
+            }
